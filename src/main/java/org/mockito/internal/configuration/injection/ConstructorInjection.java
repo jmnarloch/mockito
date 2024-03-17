@@ -37,25 +37,11 @@ import org.mockito.internal.util.reflection.FieldInitializer.ConstructorArgument
  */
 public class ConstructorInjection extends MockInjectionStrategy {
 
-    public ConstructorInjection() {}
+    public ConstructorInjection() { }
 
     @Override
     public boolean processInjection(Field field, Object fieldOwner, Set<Object> mockCandidates) {
-        try {
-            SimpleArgumentResolver simpleArgumentResolver =
-                    new SimpleArgumentResolver(mockCandidates);
-            FieldInitializationReport report =
-                    new FieldInitializer(fieldOwner, field, simpleArgumentResolver).initialize();
-
-            return report.fieldWasInitializedUsingContructorArgs();
-        } catch (MockitoException e) {
-            if (e.getCause() instanceof InvocationTargetException) {
-                Throwable realCause = e.getCause().getCause();
-                throw fieldInitialisationThrewException(field, realCause);
-            }
-            // other causes should be fine
-            return false;
-        }
+        
     }
 
     /**
@@ -65,25 +51,16 @@ public class ConstructorInjection extends MockInjectionStrategy {
         final Set<Object> objects;
 
         public SimpleArgumentResolver(Set<Object> objects) {
-            this.objects = objects;
+            
         }
 
         @Override
         public Object[] resolveTypeInstances(Class<?>... argTypes) {
-            List<Object> argumentInstances = new ArrayList<>(argTypes.length);
-            for (Class<?> argType : argTypes) {
-                argumentInstances.add(objectThatIsAssignableFrom(argType));
-            }
-            return argumentInstances.toArray();
+            
         }
 
         private Object objectThatIsAssignableFrom(Class<?> argType) {
-            for (Object object : objects) {
-                if (argType.isAssignableFrom(object.getClass())) {
-                    return object;
-                }
-            }
-            return null;
+            
         }
     }
 }

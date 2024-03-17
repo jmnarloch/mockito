@@ -14,11 +14,11 @@ public class InOrderContextImpl implements InOrderContext {
 
     @Override
     public boolean isVerified(Invocation invocation) {
-        return verified.contains(invocation);
+        
     }
 
     @Override
     public void markVerified(Invocation i) {
-        verified.add(i);
+        
     }
 }

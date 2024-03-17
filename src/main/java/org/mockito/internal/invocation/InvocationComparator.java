@@ -14,6 +14,6 @@ import org.mockito.invocation.Invocation;
 public class InvocationComparator implements Comparator<Invocation> {
     @Override
     public int compare(Invocation o1, Invocation o2) {
-        return Integer.compare(o1.getSequenceNumber(), o2.getSequenceNumber());
+        
     }
 }

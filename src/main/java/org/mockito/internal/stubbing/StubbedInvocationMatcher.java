@@ -27,45 +27,35 @@ public class StubbedInvocationMatcher extends InvocationMatcher implements Seria
 
     public StubbedInvocationMatcher(
             Answer answer, MatchableInvocation invocation, Strictness strictness) {
-        super(invocation.getInvocation(), invocation.getMatchers());
-        this.strictness = strictness;
-        this.answers.add(answer);
+        
     }
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
         // see ThreadsShareGenerouslyStubbedMockTest
-        Answer a;
-        synchronized (answers) {
-            a = answers.size() == 1 ? answers.peek() : answers.poll();
-        }
-        return a.answer(invocation);
+        
     }
 
     public void addAnswer(Answer answer) {
-        answers.add(answer);
+        
     }
 
     public void markStubUsed(DescribedInvocation usedAt) {
-        synchronized (usedAtLock) {
-            this.usedAt = usedAt;
-        }
+        
     }
 
     @Override
     public boolean wasUsed() {
-        synchronized (usedAtLock) {
-            return usedAt != null;
-        }
+        
     }
 
     @Override
     public String toString() {
-        return super.toString() + " stubbed with: " + answers;
+        
     }
 
     @Override
     public Strictness getStrictness() {
-        return strictness;
+        
     }
 }

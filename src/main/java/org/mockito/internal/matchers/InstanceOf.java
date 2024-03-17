@@ -15,28 +15,25 @@ public class InstanceOf implements ArgumentMatcher<Object>, Serializable {
     private final String description;
 
     public InstanceOf(Class<?> clazz) {
-        this(clazz, "isA(" + clazz.getCanonicalName() + ")");
+        
     }
 
     public InstanceOf(Class<?> clazz, String describedAs) {
-        this.clazz = clazz;
-        this.description = describedAs;
+        
     }
 
     @Override
     public boolean matches(Object actual) {
-        return (actual != null)
-                && (Primitives.isAssignableFromWrapper(actual.getClass(), clazz)
-                        || clazz.isAssignableFrom(actual.getClass()));
+        
     }
 
     @Override
     public Class<?> type() {
-        return clazz;
+        
     }
 
     @Override
     public String toString() {
-        return description;
+        
     }
 }

@@ -20,23 +20,10 @@ public class MatchersBinder implements Serializable {
 
     public InvocationMatcher bindMatchers(
             ArgumentMatcherStorage argumentMatcherStorage, Invocation invocation) {
-        List<LocalizedMatcher> lastMatchers = argumentMatcherStorage.pullLocalizedMatchers();
-        validateMatchers(invocation, lastMatchers);
-
-        List<ArgumentMatcher> matchers = new LinkedList<>();
-        for (LocalizedMatcher m : lastMatchers) {
-            matchers.add(m.getMatcher());
-        }
-        return new InvocationMatcher(invocation, matchers);
+        
     }
 
     private void validateMatchers(Invocation invocation, List<LocalizedMatcher> lastMatchers) {
-        if (!lastMatchers.isEmpty()) {
-            int recordedMatchersSize = lastMatchers.size();
-            int expectedMatchersSize = invocation.getArguments().length;
-            if (expectedMatchersSize != recordedMatchersSize) {
-                throw invalidUseOfMatchers(expectedMatchersSize, lastMatchers);
-            }
-        }
+        
     }
 }

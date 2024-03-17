@@ -24,19 +24,14 @@ public class MockitoSerializationIssue extends ObjectStreamException {
     private StackTraceElement[] unfilteredStackTrace;
 
     public MockitoSerializationIssue(String message, Exception cause) {
-        super(message);
-        initCause(cause);
-        filterStackTrace();
+        
     }
 
     private void filterStackTrace() {
-        unfilteredStackTrace = super.getStackTrace();
-
-        ConditionalStackTraceFilter filter = new ConditionalStackTraceFilter();
-        filter.filter(this);
+        
     }
 
     public StackTraceElement[] getUnfilteredStackTrace() {
-        return unfilteredStackTrace;
+        
     }
 }

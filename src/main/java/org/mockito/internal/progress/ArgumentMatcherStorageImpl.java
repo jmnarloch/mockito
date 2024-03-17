@@ -27,77 +27,47 @@ public class ArgumentMatcherStorageImpl implements ArgumentMatcherStorage {
 
     @Override
     public void reportMatcher(ArgumentMatcher<?> matcher) {
-        matcherStack.push(new LocalizedMatcher(matcher));
+        
     }
 
     @Override
     public List<LocalizedMatcher> pullLocalizedMatchers() {
-        if (matcherStack.isEmpty()) {
-            return emptyList();
-        }
-
-        return resetStack();
+        
     }
 
     public void reportAnd() {
-        assertStateFor("And(?)", TWO_SUB_MATCHERS);
-
-        ArgumentMatcher<?> m1 = popMatcher();
-        ArgumentMatcher<?> m2 = popMatcher();
-
-        reportMatcher(new And(m1, m2));
+        
     }
 
     @Override
     public void reportOr() {
-        assertStateFor("Or(?)", TWO_SUB_MATCHERS);
-
-        ArgumentMatcher<?> m1 = popMatcher();
-        ArgumentMatcher<?> m2 = popMatcher();
-
-        reportMatcher(new Or(m1, m2));
+        
     }
 
     @Override
     public void reportNot() {
-        assertStateFor("Not(?)", ONE_SUB_MATCHER);
-
-        ArgumentMatcher<?> m = popMatcher();
-
-        reportMatcher(new Not(m));
+        
     }
 
     @Override
     public void validateState() {
-        if (!matcherStack.isEmpty()) {
-            List<LocalizedMatcher> lastMatchers = resetStack();
-            throw misplacedArgumentMatcher(lastMatchers);
-        }
+        
     }
 
     @Override
     public void reset() {
-        matcherStack.clear();
+        
     }
 
     private void assertStateFor(String additionalMatcherName, int subMatchersCount) {
-        if (matcherStack.isEmpty()) {
-            throw reportNoSubMatchersFound(additionalMatcherName);
-        }
-        if (matcherStack.size() < subMatchersCount) {
-            List<LocalizedMatcher> lastMatchers = resetStack();
-            throw incorrectUseOfAdditionalMatchers(
-                    additionalMatcherName, subMatchersCount, lastMatchers);
-        }
+        
     }
 
     private ArgumentMatcher<?> popMatcher() {
-        return matcherStack.pop().getMatcher();
+        
     }
 
     private List<LocalizedMatcher> resetStack() {
-        ArrayList<LocalizedMatcher> lastMatchers = new ArrayList<>(matcherStack);
-        reset();
-        return lastMatchers;
+        
     }
 }

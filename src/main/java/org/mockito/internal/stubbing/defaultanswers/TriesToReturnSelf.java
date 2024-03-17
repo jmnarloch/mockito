@@ -16,14 +16,6 @@ public class TriesToReturnSelf implements Answer<Object>, Serializable {
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        Class<?> methodReturnType = invocation.getMethod().getReturnType();
-        Object mock = invocation.getMock();
-        Class<?> mockType = MockUtil.getMockHandler(mock).getMockSettings().getTypeToMock();
-
-        if (methodReturnType.isAssignableFrom(mockType) && methodReturnType != Object.class) {
-            return invocation.getMock();
-        }
-
-        return defaultReturn.returnValueFor(methodReturnType);
+        
     }
 }

@@ -18,21 +18,17 @@ public class DoesNothing implements Answer<Object>, ValidableAnswer, Serializabl
 
     private static final DoesNothing SINGLETON = new DoesNothing();
 
-    private DoesNothing() {}
+    private DoesNothing() { }
 
     public static DoesNothing doesNothing() {
-        return SINGLETON;
+        
     }
 
     @Override
-    public Object answer(InvocationOnMock invocation) {
-        return null;
-    }
+    public Object answer(InvocationOnMock invocation) { }
 
     @Override
     public void validateFor(InvocationOnMock invocation) {
-        if (!new InvocationInfo(invocation).isVoid()) {
-            throw onlyVoidMethodsCanBeSetToDoNothing();
-        }
+        
     }
 }

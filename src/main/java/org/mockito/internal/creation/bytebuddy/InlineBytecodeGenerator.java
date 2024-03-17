@@ -86,90 +86,7 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
             DetachedThreadLocal<Map<Class<?>, MockMethodInterceptor>> mockedStatics,
             Predicate<Class<?>> isMockConstruction,
             ConstructionCallback onConstruction) {
-        preload();
-        this.instrumentation = instrumentation;
-        byteBuddy =
-                new ByteBuddy()
-                        .with(TypeValidation.DISABLED)
-                        .with(Implementation.Context.Disabled.Factory.INSTANCE)
-                        .with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE)
-                        .ignore(isSynthetic().and(not(isConstructor())).or(isDefaultFinalizer()));
-        mocked = new WeakConcurrentSet<>(WeakConcurrentSet.Cleaner.MANUAL);
-        flatMocked = new WeakConcurrentSet<>(WeakConcurrentSet.Cleaner.MANUAL);
-        String identifier = RandomString.make();
-        subclassEngine =
-                new TypeCachingBytecodeGenerator(
-                        new SubclassBytecodeGenerator(
-                                withDefaultConfiguration()
-                                        .withBinders(
-                                                of(MockMethodAdvice.Identifier.class, identifier))
-                                        .to(MockMethodAdvice.ForReadObject.class),
-                                isAbstract().or(isNative()).or(isToString())),
-                        false);
-        mockTransformer =
-                new AsmVisitorWrapper.ForDeclaredMethods()
-                        .method(
-                                isVirtual()
-                                        .and(
-                                                not(
-                                                        isBridge()
-                                                                .or(isHashCode())
-                                                                .or(isEquals())
-                                                                .or(isDefaultFinalizer())))
-                                        .and(
-                                                not(isDeclaredBy(nameStartsWith("java."))
-                                                                .<MethodDescription>and(
-                                                                        isPackagePrivate()))
-                                                        .and(
-                                                                not(
-                                                                        BytecodeGenerator
-                                                                                .isGroovyMethod(
-                                                                                        true)))),
-                                Advice.withCustomMapping()
-                                        .bind(MockMethodAdvice.Identifier.class, identifier)
-                                        .to(MockMethodAdvice.class))
-                        .method(
-                                isStatic().and(not(BytecodeGenerator.isGroovyMethod(true))),
-                                Advice.withCustomMapping()
-                                        .bind(MockMethodAdvice.Identifier.class, identifier)
-                                        .to(MockMethodAdvice.ForStatic.class))
-                        .constructor(any(), new MockMethodAdvice.ConstructorShortcut(identifier))
-                        .method(
-                                isHashCode(),
-                                Advice.withCustomMapping()
-                                        .bind(MockMethodAdvice.Identifier.class, identifier)
-                                        .to(MockMethodAdvice.ForHashCode.class))
-                        .method(
-                                isEquals(),
-                                Advice.withCustomMapping()
-                                        .bind(MockMethodAdvice.Identifier.class, identifier)
-                                        .to(MockMethodAdvice.ForEquals.class));
-        Method getModule, canRead, redefineModule;
-        try {
-            getModule = Class.class.getMethod("getModule");
-            canRead = getModule.getReturnType().getMethod("canRead", getModule.getReturnType());
-            redefineModule =
-                    Instrumentation.class.getMethod(
-                            "redefineModule",
-                            getModule.getReturnType(),
-                            Set.class,
-                            Map.class,
-                            Map.class,
-                            Set.class,
-                            Map.class);
-        } catch (Exception ignored) {
-            getModule = null;
-            canRead = null;
-            redefineModule = null;
-        }
-        this.getModule = getModule;
-        this.canRead = canRead;
-        this.redefineModule = redefineModule;
-        MockMethodDispatcher.set(
-                identifier,
-                new MockMethodAdvice(
-                        mocks, mockedStatics, identifier, isMockConstruction, onConstruction));
-        instrumentation.addTransformer(this, true);
+        
     }
 
     /**
@@ -187,189 +104,43 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
      * easily validate that whitelisting actually solves a problem as circularities could also be caused by other problems.
      */
     private static void preload() {
-        String preloads = System.getProperty(PRELOAD);
-        if (preloads == null) {
-            preloads =
-                    "java.lang.WeakPairMap,java.lang.WeakPairMap$Pair,java.lang.WeakPairMap$Pair$Weak";
-        }
-        for (String preload : preloads.split(",")) {
-            try {
-                Class.forName(preload, false, null);
-            } catch (ClassNotFoundException ignored) {
-            }
-        }
+        
     }
 
     @Override
     public <T> Class<? extends T> mockClass(MockFeatures<T> features) {
-        boolean subclassingRequired =
-                !features.interfaces.isEmpty()
-                        || features.serializableMode != SerializableMode.NONE
-                        || features.stripAnnotations
-                        || Modifier.isAbstract(features.mockedType.getModifiers());
-
-        checkSupportedCombination(subclassingRequired, features);
-
-        Set<Class<?>> types = new HashSet<>();
-        types.add(features.mockedType);
-        types.addAll(features.interfaces);
-
-        synchronized (this) {
-            triggerRetransformation(types, false);
-        }
-
-        return subclassingRequired ? subclassEngine.mockClass(features) : features.mockedType;
+        
     }
 
     @Override
     public synchronized void mockClassStatic(Class<?> type) {
-        triggerRetransformation(Collections.singleton(type), true);
+        
     }
 
     @Override
     public synchronized void mockClassConstruction(Class<?> type) {
-        triggerRetransformation(Collections.singleton(type), false);
+        
     }
 
     private static void assureInitialization(Class<?> type) {
-        try {
-            Class.forName(type.getName(), true, type.getClassLoader());
-        } catch (ExceptionInInitializerError e) {
-            throw new MockitoException(
-                    "Cannot instrument "
-                            + type
-                            + " because it or one of its supertypes could not be initialized",
-                    e.getException());
-        } catch (Throwable ignored) {
-        }
+        
     }
 
     private <T> void triggerRetransformation(Set<Class<?>> types, boolean flat) {
-        Set<Class<?>> targets = new HashSet<Class<?>>();
-
-        try {
-            for (Class<?> type : types) {
-                if (flat) {
-                    if (!mocked.contains(type) && flatMocked.add(type)) {
-                        assureInitialization(type);
-                        targets.add(type);
-                    }
-                } else {
-                    do {
-                        if (mocked.add(type)) {
-                            if (!flatMocked.remove(type)) {
-                                assureInitialization(type);
-                                targets.add(type);
-                            }
-                            addInterfaces(targets, type.getInterfaces());
-                        }
-                        type = type.getSuperclass();
-                    } while (type != null);
-                }
-            }
-        } catch (Throwable t) {
-            for (Class<?> target : targets) {
-                mocked.remove(target);
-                flatMocked.remove(target);
-            }
-            throw t;
-        }
-
-        if (!targets.isEmpty()) {
-            try {
-                assureCanReadMockito(targets);
-                instrumentation.retransformClasses(targets.toArray(new Class<?>[targets.size()]));
-                Throwable throwable = lastException;
-                if (throwable != null) {
-                    throw new IllegalStateException(
-                            join(
-                                    "Byte Buddy could not instrument all classes within the mock's type hierarchy",
-                                    "",
-                                    "This problem should never occur for javac-compiled classes. This problem has been observed for classes that are:",
-                                    " - Compiled by older versions of scalac",
-                                    " - Classes that are part of the Android distribution"),
-                            throwable);
-                }
-            } catch (Exception exception) {
-                for (Class<?> failed : targets) {
-                    mocked.remove(failed);
-                    flatMocked.remove(failed);
-                }
-                throw new MockitoException("Could not modify all classes " + targets, exception);
-            } finally {
-                lastException = null;
-            }
-        }
-
-        mocked.expungeStaleEntries();
-        flatMocked.expungeStaleEntries();
+        
     }
 
     private void assureCanReadMockito(Set<Class<?>> types) {
-        if (redefineModule == null) {
-            return;
-        }
-        Set<Object> modules = new HashSet<Object>();
-        try {
-            Object target =
-                    getModule.invoke(
-                            Class.forName(
-                                    "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher",
-                                    false,
-                                    null));
-            for (Class<?> type : types) {
-                Object module = getModule.invoke(type);
-                if (!modules.contains(module) && !(Boolean) canRead.invoke(module, target)) {
-                    modules.add(module);
-                }
-            }
-            for (Object module : modules) {
-                redefineModule.invoke(
-                        instrumentation,
-                        module,
-                        Collections.singleton(target),
-                        Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        Collections.emptySet(),
-                        Collections.emptyMap());
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    join(
-                            "Could not adjust module graph to make the mock instance dispatcher visible to some classes",
-                            "",
-                            "At least one of those modules: "
-                                    + modules
-                                    + " is not reading the unnamed module of the bootstrap loader",
-                            "Without such a read edge, the classes that are redefined to become mocks cannot access the mock dispatcher.",
-                            "To circumvent this, Mockito attempted to add a read edge to this module what failed for an unexpected reason"),
-                    e);
-        }
+        
     }
 
     private <T> void checkSupportedCombination(
             boolean subclassingRequired, MockFeatures<T> features) {
-        if (subclassingRequired
-                && !features.mockedType.isArray()
-                && !features.mockedType.isPrimitive()
-                && (Modifier.isFinal(features.mockedType.getModifiers())
-                        || TypeSupport.INSTANCE.isSealed(features.mockedType)
-                        || features.interfaces.stream().anyMatch(TypeSupport.INSTANCE::isSealed))) {
-            throw new MockitoException(
-                    "Unsupported settings with this type '" + features.mockedType.getName() + "'");
-        }
+        
     }
 
     private void addInterfaces(Set<Class<?>> types, Class<?>[] interfaces) {
-        for (Class<?> type : interfaces) {
-            if (mocked.add(type)) {
-                if (!flatMocked.remove(type)) {
-                    assureInitialization(type);
-                    types.add(type);
-                }
-                addInterfaces(types, type.getInterfaces());
-            }
-        }
+        
     }
 
     @Override
@@ -379,56 +150,12 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
             Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain,
             byte[] classfileBuffer) {
-        if (classBeingRedefined == null
-                || !mocked.contains(classBeingRedefined)
-                        && !flatMocked.contains(classBeingRedefined)
-                || EXCLUDES.contains(classBeingRedefined)) {
-            return null;
-        } else {
-            try {
-                return byteBuddy
-                        .redefine(
-                                classBeingRedefined,
-                                //        new ClassFileLocator.Compound(
-                                ClassFileLocator.Simple.of(
-                                        classBeingRedefined.getName(), classfileBuffer)
-                                //            ,ClassFileLocator.ForClassLoader.ofSystemLoader()
-                                //        )
-                                )
-                        // Note: The VM erases parameter meta data from the provided class file
-                        // (bug). We just add this information manually.
-                        .visit(new ParameterWritingVisitorWrapper(classBeingRedefined))
-                        .visit(mockTransformer)
-                        .make()
-                        .getBytes();
-            } catch (Throwable throwable) {
-                lastException = throwable;
-                return null;
-            }
-        }
+        
     }
 
     @Override
     public synchronized void clearAllCaches() {
-        Set<Class<?>> types = new HashSet<>();
-        mocked.forEach(types::add);
-        if (types.isEmpty()) {
-            return;
-        }
-        mocked.clear();
-        flatMocked.clear();
-        subclassEngine.clearAllCaches();
-        try {
-            instrumentation.retransformClasses(types.toArray(new Class<?>[0]));
-        } catch (UnmodifiableClassException e) {
-            throw new MockitoException(
-                    join(
-                            "Failed to reset mocks.",
-                            "",
-                            "This should not influence the working of Mockito.",
-                            "But if the reset intends to remove mocking code to improve performance, it is still impacted."),
-                    e);
-        }
+        
     }
 
     private static class ParameterWritingVisitorWrapper extends AsmVisitorWrapper.AbstractBase {
@@ -436,7 +163,7 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
         private final Class<?> type;
 
         private ParameterWritingVisitorWrapper(Class<?> type) {
-            this.type = type;
+            
         }
 
         @Override
@@ -449,10 +176,7 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
                 MethodList<?> methods,
                 int writerFlags,
                 int readerFlags) {
-            return implementationContext.getClassFileVersion().isAtLeast(ClassFileVersion.JAVA_V8)
-                    ? new ParameterAddingClassVisitor(
-                            classVisitor, new TypeDescription.ForLoadedType(type))
-                    : classVisitor;
+            
         }
 
         private static class ParameterAddingClassVisitor extends ClassVisitor {
@@ -460,49 +184,24 @@ public class InlineBytecodeGenerator implements BytecodeGenerator, ClassFileTran
             private final TypeDescription typeDescription;
 
             private ParameterAddingClassVisitor(ClassVisitor cv, TypeDescription typeDescription) {
-                super(OpenedClassReader.ASM_API, cv);
-                this.typeDescription = typeDescription;
+                
             }
 
             @Override
             public MethodVisitor visitMethod(
                     int access, String name, String desc, String signature, String[] exceptions) {
-                MethodVisitor methodVisitor =
-                        super.visitMethod(access, name, desc, signature, exceptions);
-                MethodList<?> methodList =
-                        typeDescription
-                                .getDeclaredMethods()
-                                .filter(
-                                        (name.equals(MethodDescription.CONSTRUCTOR_INTERNAL_NAME)
-                                                        ? isConstructor()
-                                                        : ElementMatchers.<MethodDescription>named(
-                                                                name))
-                                                .and(hasDescriptor(desc)));
-                if (methodList.size() == 1
-                        && methodList.getOnly().getParameters().hasExplicitMetaData()) {
-                    for (ParameterDescription parameterDescription :
-                            methodList.getOnly().getParameters()) {
-                        methodVisitor.visitParameter(
-                                parameterDescription.getName(),
-                                parameterDescription.getModifiers());
-                    }
-                    return new MethodParameterStrippingMethodVisitor(methodVisitor);
-                } else {
-                    return methodVisitor;
-                }
+                
             }
         }
 
         private static class MethodParameterStrippingMethodVisitor extends MethodVisitor {
 
             public MethodParameterStrippingMethodVisitor(MethodVisitor mv) {
-                super(OpenedClassReader.ASM_API, mv);
+                
             }
 
             @Override
-            public void visitParameter(String name, int access) {
-                // suppress to avoid additional writing of the parameter if retained.
-            }
+            public void visitParameter(String name, int access) { }
         }
     }
 }

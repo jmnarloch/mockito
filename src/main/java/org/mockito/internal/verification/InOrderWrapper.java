@@ -20,16 +20,11 @@ public class InOrderWrapper implements VerificationMode {
     private final InOrderImpl inOrder;
 
     public InOrderWrapper(VerificationInOrderMode mode, InOrderImpl inOrder) {
-        this.mode = mode;
-        this.inOrder = inOrder;
+        
     }
 
     @Override
     public void verify(VerificationData data) {
-        List<Invocation> invocations =
-                VerifiableInvocationsFinder.find(inOrder.getMocksToBeVerifiedInOrder());
-        VerificationDataInOrderImpl dataInOrder =
-                new VerificationDataInOrderImpl(inOrder, invocations, data.getTarget());
-        mode.verifyInOrder(dataInOrder);
+        
     }
 }

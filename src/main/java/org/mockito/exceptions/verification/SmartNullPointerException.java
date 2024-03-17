@@ -11,6 +11,6 @@ public class SmartNullPointerException extends MockitoException {
     private static final long serialVersionUID = 1L;
 
     public SmartNullPointerException(String message) {
-        super(message);
+        
     }
 }

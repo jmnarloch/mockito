@@ -9,16 +9,14 @@ import java.io.Serializable;
 public class CompareEqual<T extends Comparable<T>> extends CompareTo<T> implements Serializable {
 
     public CompareEqual(T value) {
-        super(value);
+        
     }
 
     @Override
-    protected String getName() {
-        return "cmpEq";
-    }
+    protected String getName() { }
 
     @Override
     protected boolean matchResult(int result) {
-        return result == 0;
+        
     }
 }

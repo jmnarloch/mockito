@@ -54,22 +54,10 @@ public class ReturnsMoreEmptyValues implements Answer<Object>, Serializable {
      */
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        Object ret = delegate.answer(invocation);
-        if (ret != null) {
-            return ret;
-        }
-
-        Class<?> returnType = invocation.getMethod().getReturnType();
-        return returnValueFor(returnType);
+        
     }
 
     Object returnValueFor(Class<?> type) {
-        if (type == String.class) {
-            return "";
-        } else if (type.isArray()) {
-            Class<?> componentType = type.getComponentType();
-            return Array.newInstance(componentType, 0);
-        }
-        return null;
+        
     }
 }

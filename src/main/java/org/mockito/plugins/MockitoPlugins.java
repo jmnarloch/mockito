@@ -60,6 +60,6 @@ public interface MockitoPlugins {
      * @since 5.6.0
      */
     default MockMaker getMockMaker(String mockMaker) {
-        throw new UnsupportedOperationException("This method is not implemented.");
+        
     }
 }

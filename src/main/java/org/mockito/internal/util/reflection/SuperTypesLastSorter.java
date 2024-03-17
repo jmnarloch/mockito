@@ -17,40 +17,14 @@ import java.util.List;
  */
 public class SuperTypesLastSorter {
 
-    private SuperTypesLastSorter() {}
+    private SuperTypesLastSorter() { }
 
     /**
      * Return a new collection with the fields sorted first by name,
      * then with any fields moved after their supertypes.
      */
     public static List<Field> sortSuperTypesLast(Collection<? extends Field> unsortedFields) {
-        List<Field> fields = new ArrayList<>(unsortedFields);
-
-        Collections.sort(fields, compareFieldsByName);
-
-        int i = 0;
-
-        while (i < fields.size() - 1) {
-            Field f = fields.get(i);
-            Class<?> ft = f.getType();
-            int newPos = i;
-            for (int j = i + 1; j < fields.size(); j++) {
-                Class<?> t = fields.get(j).getType();
-
-                if (ft != t && ft.isAssignableFrom(t)) {
-                    newPos = j;
-                }
-            }
-
-            if (newPos == i) {
-                i++;
-            } else {
-                fields.remove(i);
-                fields.add(newPos, f);
-            }
-        }
-
-        return fields;
+        
     }
 
     private static final Comparator<Field> compareFieldsByName =

@@ -22,6 +22,6 @@ public class GloballyConfiguredAnswer implements Answer<Object>, Serializable {
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        return new GlobalConfiguration().getDefaultAnswer().answer(invocation);
+        
     }
 }

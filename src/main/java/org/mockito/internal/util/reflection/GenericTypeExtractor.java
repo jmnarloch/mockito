@@ -35,21 +35,7 @@ public final class GenericTypeExtractor {
     public static Class<?> genericTypeOf(
             Class<?> rootClass, Class<?> targetBaseClass, Class<?> targetBaseInterface) {
         // looking for candidates in the hierarchy of rootClass
-        Class<?> match = rootClass;
-        while (match != Object.class) {
-            // check the super class first
-            if (match.getSuperclass() == targetBaseClass) {
-                return extractGeneric(match.getGenericSuperclass());
-            }
-            // check the interfaces (recursively)
-            Type genericInterface = findGenericInterface(match, targetBaseInterface);
-            if (genericInterface != null) {
-                return extractGeneric(genericInterface);
-            }
-            // recurse the hierarchy
-            match = match.getSuperclass();
-        }
-        return Object.class;
+        
     }
 
     /**
@@ -57,18 +43,7 @@ public final class GenericTypeExtractor {
      * Returns null if not found. Recurses the interface hierarchy.
      */
     private static Type findGenericInterface(Class<?> sourceClass, Class<?> targetBaseInterface) {
-        for (int i = 0; i < sourceClass.getInterfaces().length; i++) {
-            Class<?> inter = sourceClass.getInterfaces()[i];
-            if (inter == targetBaseInterface) {
-                return sourceClass.getGenericInterfaces()[i];
-            } else {
-                Type deeper = findGenericInterface(inter, targetBaseInterface);
-                if (deeper != null) {
-                    return deeper;
-                }
-            }
-        }
-        return null;
+        
     }
 
     /**
@@ -76,14 +51,8 @@ public final class GenericTypeExtractor {
      * If there is no generic parameter it returns Object.class
      */
     private static Class<?> extractGeneric(Type type) {
-        if (type instanceof ParameterizedType) {
-            Type[] genericTypes = ((ParameterizedType) type).getActualTypeArguments();
-            if (genericTypes.length > 0 && genericTypes[0] instanceof Class) {
-                return (Class<?>) genericTypes[0];
-            }
-        }
-        return Object.class;
+        
     }
 
-    private GenericTypeExtractor() {}
+    private GenericTypeExtractor() { }
 }

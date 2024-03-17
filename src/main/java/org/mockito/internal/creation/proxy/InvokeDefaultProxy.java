@@ -21,14 +21,12 @@ class InvokeDefaultProxy implements ProxyRealMethod {
     private final Method invokeDefault;
 
     InvokeDefaultProxy() throws Throwable {
-        invokeDefault =
-                InvocationHandler.class.getMethod(
-                        "invokeDefault", Object.class, Method.class, Object[].class);
+        
     }
 
     @Override
     public RealMethod resolve(Object proxy, Method method, Object[] args) {
-        return new InvokeDefaultRealMethod(proxy, method, args);
+        
     }
 
     private class InvokeDefaultRealMethod implements RealMethod, Serializable {
@@ -40,33 +38,15 @@ class InvokeDefaultProxy implements ProxyRealMethod {
         private final Object[] args;
 
         private InvokeDefaultRealMethod(Object proxy, Method method, Object[] args) {
-            this.proxy = proxy;
-            this.serializableMethod = new SerializableMethod(method);
-            this.args = args;
+            
         }
 
         @Override
-        public boolean isInvokable() {
-            return true;
-        }
+        public boolean isInvokable() { }
 
         @Override
         public Object invoke() throws Throwable {
-            try {
-                return invokeDefault.invoke(null, proxy, serializableMethod.getJavaMethod(), args);
-            } catch (InvocationTargetException e) {
-                throw e.getTargetException();
-            } catch (IllegalAccessException | IllegalArgumentException e) {
-                throw new MockitoException(
-                        join(
-                                "Failed to access default method or invoked method with illegal arguments",
-                                "",
-                                "Method "
-                                        + serializableMethod.getJavaMethod()
-                                        + " could not be delegated, this is not supposed to happen",
-                                Platform.describe()),
-                        e);
-            }
+            
         }
     }
 }

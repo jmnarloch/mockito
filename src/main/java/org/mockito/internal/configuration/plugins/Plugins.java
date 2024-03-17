@@ -29,7 +29,7 @@ public final class Plugins {
      * The implementation of the stack trace cleaner
      */
     public static StackTraceCleanerProvider getStackTraceCleanerProvider() {
-        return registry.getStackTraceCleanerProvider();
+        
     }
 
     /**
@@ -39,7 +39,7 @@ public final class Plugins {
      * {@link org.mockito.plugins.MockMaker} extension exists or is visible in the current classpath.</p>
      */
     public static MockMaker getMockMaker() {
-        return registry.getMockMaker();
+        
     }
 
     /**
@@ -49,7 +49,7 @@ public final class Plugins {
      * {@link org.mockito.plugins.MemberAccessor} extension exists or is visible in the current classpath.</p>
      */
     public static MemberAccessor getMemberAccessor() {
-        return registry.getMemberAccessor();
+        
     }
 
     /**
@@ -60,7 +60,7 @@ public final class Plugins {
      * current classpath.</p>
      */
     public static InstantiatorProvider2 getInstantiatorProvider() {
-        return registry.getInstantiatorProvider();
+        
     }
 
     /**
@@ -70,7 +70,7 @@ public final class Plugins {
      * {@link org.mockito.plugins.AnnotationEngine} extension exists or is visible in the current classpath.</p>
      */
     public static AnnotationEngine getAnnotationEngine() {
-        return registry.getAnnotationEngine();
+        
     }
 
     /**
@@ -80,7 +80,7 @@ public final class Plugins {
      * {@link org.mockito.plugins.MockitoLogger} extension exists or is visible in the current classpath.</p>
      */
     public static MockitoLogger getMockitoLogger() {
-        return registry.getMockitoLogger();
+        
     }
 
     /**
@@ -89,14 +89,14 @@ public final class Plugins {
      * @return A list of available mock resolvers or an empty list if none are registered.
      */
     public static List<MockResolver> getMockResolvers() {
-        return registry.getMockResolvers();
+        
     }
 
     /**
      * @return instance of mockito plugins type
      */
     public static MockitoPlugins getPlugins() {
-        return new DefaultMockitoPlugins();
+        
     }
 
     /**
@@ -107,8 +107,8 @@ public final class Plugins {
      * in the current classpath.</p>
      */
     public static DoNotMockEnforcerWithType getDoNotMockEnforcer() {
-        return registry.getDoNotMockEnforcer();
+        
     }
 
-    private Plugins() {}
+    private Plugins() { }
 }

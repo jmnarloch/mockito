@@ -14,21 +14,21 @@ public class Same implements ArgumentMatcher<Object>, Serializable {
     private final Object wanted;
 
     public Same(Object wanted) {
-        this.wanted = wanted;
+        
     }
 
     @Override
     public boolean matches(Object actual) {
-        return wanted == actual;
+        
     }
 
     @Override
     public Class<?> type() {
-        return wanted != null ? wanted.getClass() : ArgumentMatcher.super.type();
+        
     }
 
     @Override
     public String toString() {
-        return "same(" + ValuePrinter.print(wanted) + ")";
+        
     }
 }

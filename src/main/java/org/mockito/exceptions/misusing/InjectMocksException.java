@@ -11,6 +11,6 @@ import org.mockito.exceptions.base.MockitoException;
  */
 public class InjectMocksException extends MockitoException {
     public InjectMocksException(String message, Throwable cause) {
-        super(message, cause);
+        
     }
 }

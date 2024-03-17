@@ -17,9 +17,6 @@ public class NoInteractions implements VerificationMode {
     @Override
     @SuppressWarnings("unchecked")
     public void verify(VerificationData data) {
-        List<Invocation> invocations = data.getAllInvocations();
-        if (!invocations.isEmpty()) {
-            throw noInteractionsWanted(invocations.get(0).getMock(), (List) invocations);
-        }
+        
     }
 }

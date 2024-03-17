@@ -18,17 +18,14 @@ public class WarningsPrinterImpl {
             List<Invocation> unusedStubs,
             List<InvocationMatcher> allInvocations,
             boolean warnAboutUnstubbed) {
-        this(warnAboutUnstubbed, new WarningsFinder(unusedStubs, allInvocations));
+        
     }
 
     WarningsPrinterImpl(boolean warnAboutUnstubbed, WarningsFinder finder) {
-        this.warnAboutUnstubbed = warnAboutUnstubbed;
-        this.finder = finder;
+        
     }
 
     public String print() {
-        LoggingListener listener = new LoggingListener(warnAboutUnstubbed);
-        finder.find(listener);
-        return listener.getStubbingInfo();
+        
     }
 }

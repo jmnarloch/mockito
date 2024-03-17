@@ -13,45 +13,42 @@ public abstract class VerificationWrapper<WrapperT extends VerificationMode>
     protected final WrapperT wrappedVerification;
 
     public VerificationWrapper(WrapperT wrappedVerification) {
-        this.wrappedVerification = wrappedVerification;
+        
     }
 
     @Override
     public void verify(VerificationData data) {
-        wrappedVerification.verify(data);
+        
     }
 
     protected abstract VerificationMode copySelfWithNewVerificationMode(
             VerificationMode verificationMode);
 
     public VerificationMode times(int wantedNumberOfInvocations) {
-        return copySelfWithNewVerificationMode(
-                VerificationModeFactory.times(wantedNumberOfInvocations));
+        
     }
 
     public VerificationMode never() {
-        return copySelfWithNewVerificationMode(VerificationModeFactory.atMost(0));
+        
     }
 
     public VerificationMode atLeastOnce() {
-        return copySelfWithNewVerificationMode(VerificationModeFactory.atLeastOnce());
+        
     }
 
     public VerificationMode atLeast(int minNumberOfInvocations) {
-        return copySelfWithNewVerificationMode(
-                VerificationModeFactory.atLeast(minNumberOfInvocations));
+        
     }
 
     public VerificationMode atMostOnce() {
-        return copySelfWithNewVerificationMode(VerificationModeFactory.atMostOnce());
+        
     }
 
     public VerificationMode atMost(int maxNumberOfInvocations) {
-        return copySelfWithNewVerificationMode(
-                VerificationModeFactory.atMost(maxNumberOfInvocations));
+        
     }
 
     public VerificationMode only() {
-        return copySelfWithNewVerificationMode(VerificationModeFactory.only());
+        
     }
 }

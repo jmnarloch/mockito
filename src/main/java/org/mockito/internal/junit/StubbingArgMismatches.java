@@ -20,35 +20,19 @@ class StubbingArgMismatches {
     final Map<Invocation, Set<Invocation>> mismatches = new LinkedHashMap<>();
 
     public void add(Invocation invocation, Invocation stubbing) {
-        Set<Invocation> matchingInvocations =
-                mismatches.computeIfAbsent(
-                        stubbing, (Invocation k) -> new LinkedHashSet<Invocation>());
-        matchingInvocations.add(invocation);
+        
     }
 
     public void format(String testName, MockitoLogger logger) {
-        if (mismatches.isEmpty()) {
-            return;
-        }
-
-        StubbingHint hint = new StubbingHint(testName);
-        int x = 1;
-        for (Map.Entry<Invocation, Set<Invocation>> m : mismatches.entrySet()) {
-            hint.appendLine(x++, ". Unused... ", m.getKey().getLocation());
-            for (Invocation invocation : m.getValue()) {
-                hint.appendLine(" ...args ok? ", invocation.getLocation());
-            }
-        }
-
-        logger.log(hint.toString());
+        
     }
 
     public int size() {
-        return mismatches.size();
+        
     }
 
     @Override
     public String toString() {
-        return "" + mismatches;
+        
     }
 }

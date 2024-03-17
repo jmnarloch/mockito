@@ -31,9 +31,7 @@ public class BeanPropertySetter {
      */
     public BeanPropertySetter(
             final Object target, final Field propertyField, boolean reportNoSetterFound) {
-        this.field = propertyField;
-        this.target = target;
-        this.reportNoSetterFound = reportNoSetterFound;
+        
     }
 
     /**
@@ -42,7 +40,7 @@ public class BeanPropertySetter {
      * @param propertyField The propertyField that must be accessed through a setter
      */
     public BeanPropertySetter(final Object target, final Field propertyField) {
-        this(target, propertyField, false);
+        
     }
 
     /**
@@ -54,40 +52,7 @@ public class BeanPropertySetter {
      */
     public boolean set(final Object value) {
 
-        MemberAccessor accessor = Plugins.getMemberAccessor();
-        Method writeMethod = null;
-        try {
-            writeMethod = target.getClass().getMethod(setterName(field.getName()), field.getType());
-            accessor.invoke(writeMethod, target, value);
-            return true;
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(
-                    "Setter '"
-                            + writeMethod
-                            + "' of '"
-                            + target
-                            + "' with value '"
-                            + value
-                            + "' threw exception : '"
-                            + e.getTargetException()
-                            + "'",
-                    e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(
-                    "Access not authorized on field '"
-                            + field
-                            + "' of object '"
-                            + target
-                            + "' with value: '"
-                            + value
-                            + "'",
-                    e);
-        } catch (NoSuchMethodException e) {
-            reportNoSetterFound();
-        }
-
-        reportNoSetterFound();
-        return false;
+        
     }
 
     /**
@@ -99,20 +64,10 @@ public class BeanPropertySetter {
      * @return Setter name.
      */
     private String setterName(String fieldName) {
-        return new StringBuilder(SET_PREFIX)
-                .append(fieldName.substring(0, 1).toUpperCase(Locale.ENGLISH))
-                .append(fieldName, 1, fieldName.length())
-                .toString();
+        
     }
 
     private void reportNoSetterFound() {
-        if (reportNoSetterFound) {
-            throw new RuntimeException(
-                    "Problems setting value on object: ["
-                            + target
-                            + "] for property : ["
-                            + field.getName()
-                            + "], setter not found");
-        }
+        
     }
 }

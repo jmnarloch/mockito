@@ -42,19 +42,7 @@ public interface DoNotMockEnforcer extends DoNotMockEnforcerWithType {
      */
     @Override
     default String checkTypeForDoNotMockViolation(MockCreationSettings<?> creationSettings) {
-        String warning = recursiveCheckDoNotMockAnnotationForType(creationSettings.getTypeToMock());
-        if (warning != null) {
-            return warning;
-        }
-
-        for (Class<?> aClass : creationSettings.getExtraInterfaces()) {
-            warning = recursiveCheckDoNotMockAnnotationForType(aClass);
-            if (warning != null) {
-                return warning;
-            }
-        }
-
-        return null;
+        
     }
 
     private String recursiveCheckDoNotMockAnnotationForType(Class<?> type) {

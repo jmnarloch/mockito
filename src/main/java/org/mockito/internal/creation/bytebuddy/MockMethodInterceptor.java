@@ -41,19 +41,16 @@ public class MockMethodInterceptor implements Serializable {
     private transient ThreadLocal<Object> weakReferenceHatch = new ThreadLocal<>();
 
     public MockMethodInterceptor(MockHandler handler, MockCreationSettings mockCreationSettings) {
-        this.handler = handler;
-        this.mockCreationSettings = mockCreationSettings;
-        serializationSupport = new ByteBuddyCrossClassLoaderSerializationSupport();
+        
     }
 
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-        weakReferenceHatch = new ThreadLocal<>();
+        
     }
 
     Object doIntercept(Object mock, Method invokedMethod, Object[] arguments, RealMethod realMethod)
             throws Throwable {
-        return doIntercept(mock, invokedMethod, arguments, realMethod, LocationFactory.create());
+        
     }
 
     Object doIntercept(
@@ -77,54 +74,42 @@ public class MockMethodInterceptor implements Serializable {
         //
         // When dropping support for Java 8, instead of this hatch we should use an explicit fence
         // https://docs.oracle.com/javase/9/docs/api/java/lang/ref/Reference.html#reachabilityFence-java.lang.Object-
-        weakReferenceHatch.set(mock);
-        try {
-            return handler.handle(
-                    createInvocation(
-                            mock,
-                            invokedMethod,
-                            arguments,
-                            realMethod,
-                            mockCreationSettings,
-                            location));
-        } finally {
-            weakReferenceHatch.remove();
-        }
+        
     }
 
     public MockHandler getMockHandler() {
-        return handler;
+        
     }
 
     public ByteBuddyCrossClassLoaderSerializationSupport getSerializationSupport() {
-        return serializationSupport;
+        
     }
 
     public static final class ForHashCode {
 
         @SuppressWarnings("unused")
         public static int doIdentityHashCode(@This Object thiz) {
-            return System.identityHashCode(thiz);
+            
         }
 
-        private ForHashCode() {}
+        private ForHashCode() { }
     }
 
     public static class ForEquals {
 
         @SuppressWarnings("unused")
         public static boolean doIdentityEquals(@This Object thiz, @Argument(0) Object other) {
-            return thiz == other;
+            
         }
     }
 
     public static final class ForWriteReplace {
 
         public static Object doWriteReplace(@This MockAccess thiz) throws ObjectStreamException {
-            return thiz.getMockitoInterceptor().getSerializationSupport().writeReplace(thiz);
+            
         }
 
-        private ForWriteReplace() {}
+        private ForWriteReplace() { }
     }
 
     public static class DispatcherDefaultingToRealMethod {
@@ -139,11 +124,7 @@ public class MockMethodInterceptor implements Serializable {
                 @AllArguments Object[] arguments,
                 @SuperCall(serializableProxy = true) Callable<?> superCall)
                 throws Throwable {
-            if (interceptor == null) {
-                return superCall.call();
-            }
-            return interceptor.doIntercept(
-                    mock, invokedMethod, arguments, new RealMethod.FromCallable(superCall));
+            
         }
 
         @SuppressWarnings("unused")
@@ -155,11 +136,7 @@ public class MockMethodInterceptor implements Serializable {
                 @Origin Method invokedMethod,
                 @AllArguments Object[] arguments)
                 throws Throwable {
-            if (interceptor == null) {
-                return stubValue;
-            }
-            return interceptor.doIntercept(
-                    mock, invokedMethod, arguments, RealMethod.IsIllegal.INSTANCE);
+            
         }
     }
 }

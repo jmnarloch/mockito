@@ -19,6 +19,6 @@ class ObjenesisInstantiator implements Instantiator {
 
     @Override
     public <T> T newInstance(Class<T> cls) {
-        return objenesis.newInstance(cls);
+        
     }
 }

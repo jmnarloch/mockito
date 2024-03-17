@@ -30,23 +30,6 @@ public class TerminalMockCandidateFilter implements MockCandidateFilter {
             final List<Field> allRemainingCandidateFields,
             final Object injectee,
             final Field injectMocksField) {
-        if (mocks.size() == 1) {
-            final Object matchingMock = mocks.iterator().next();
-
-            MemberAccessor accessor = Plugins.getMemberAccessor();
-            return () -> {
-                try {
-                    if (!new BeanPropertySetter(injectee, candidateFieldToBeInjected)
-                            .set(matchingMock)) {
-                        accessor.set(candidateFieldToBeInjected, injectee, matchingMock);
-                    }
-                } catch (RuntimeException | IllegalAccessException e) {
-                    throw cannotInjectDependency(candidateFieldToBeInjected, matchingMock, e);
-                }
-                return matchingMock;
-            };
-        }
-
-        return OngoingInjector.nop;
+        
     }
 }

@@ -76,8 +76,7 @@ public final class MockitoHamcrest {
      */
     @SuppressWarnings("unchecked")
     public static <T> T argThat(Matcher<T> matcher) {
-        reportMatcher(matcher);
-        return (T) defaultValue(genericTypeOfMatcher(matcher.getClass()));
+        
     }
 
     /**
@@ -96,8 +95,7 @@ public final class MockitoHamcrest {
      */
     @SuppressWarnings("unchecked")
     public static <T> T argThat(Matcher<T> matcher, Class<T> type) {
-        reportMatcher(matcher, type);
-        return (T) defaultValue(genericTypeOfMatcher(matcher.getClass()));
+        
     }
 
     /**
@@ -110,8 +108,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static char charThat(Matcher<Character> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -124,8 +121,7 @@ public final class MockitoHamcrest {
      * @return <code>false</code>.
      */
     public static boolean booleanThat(Matcher<Boolean> matcher) {
-        reportMatcher(matcher);
-        return false;
+        
     }
 
     /**
@@ -138,8 +134,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static byte byteThat(Matcher<Byte> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -152,8 +147,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static short shortThat(Matcher<Short> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -166,8 +160,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static int intThat(Matcher<Integer> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -180,8 +173,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static long longThat(Matcher<Long> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -194,8 +186,7 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static float floatThat(Matcher<Float> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     /**
@@ -208,21 +199,20 @@ public final class MockitoHamcrest {
      * @return <code>0</code>.
      */
     public static double doubleThat(Matcher<Double> matcher) {
-        reportMatcher(matcher);
-        return 0;
+        
     }
 
     private static <T> void reportMatcher(Matcher<T> matcher) {
-        reportMatcher(new HamcrestArgumentMatcher<T>(matcher));
+        
     }
 
     private static <T> void reportMatcher(Matcher<T> matcher, Class<T> type) {
-        reportMatcher(new HamcrestArgumentMatcher<T>(matcher, type));
+        
     }
 
     private static <T> void reportMatcher(final HamcrestArgumentMatcher<T> matcher) {
-        mockingProgress().getArgumentMatcherStorage().reportMatcher(matcher);
+        
     }
 
-    private MockitoHamcrest() {}
+    private MockitoHamcrest() { }
 }

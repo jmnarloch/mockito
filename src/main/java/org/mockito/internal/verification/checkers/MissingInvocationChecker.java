@@ -26,52 +26,15 @@ import org.mockito.invocation.MatchableInvocation;
 
 public class MissingInvocationChecker {
 
-    private MissingInvocationChecker() {}
+    private MissingInvocationChecker() { }
 
     public static void checkMissingInvocation(
             List<Invocation> invocations, MatchableInvocation wanted) {
-        List<Invocation> actualInvocations = findInvocations(invocations, wanted);
-
-        if (!actualInvocations.isEmpty()) {
-            return;
-        }
-
-        Invocation similar = findSimilarInvocation(invocations, wanted);
-        if (similar == null) {
-            throw wantedButNotInvoked(wanted, invocations);
-        }
-
-        Integer[] indexesOfSuspiciousArgs =
-                getSuspiciouslyNotMatchingArgsIndexes(wanted.getMatchers(), similar.getArguments());
-        Set<String> classesWithSameSimpleName =
-                getNotMatchingArgsWithSameName(wanted.getMatchers(), similar.getArguments());
-        SmartPrinter smartPrinter =
-                new SmartPrinter(
-                        wanted, invocations, indexesOfSuspiciousArgs, classesWithSameSimpleName);
-        List<Location> actualLocations =
-                invocations.stream().map(Invocation::getLocation).collect(Collectors.toList());
-
-        throw argumentsAreDifferent(
-                similar,
-                wanted,
-                smartPrinter.getWanted(),
-                smartPrinter.getActuals(),
-                actualLocations);
+        
     }
 
     public static void checkMissingInvocation(
             List<Invocation> invocations, MatchableInvocation wanted, InOrderContext context) {
-        List<Invocation> chunk = findAllMatchingUnverifiedChunks(invocations, wanted, context);
-
-        if (!chunk.isEmpty()) {
-            return;
-        }
-
-        Invocation previousInOrder = findPreviousVerifiedInOrder(invocations, context);
-        if (previousInOrder != null) {
-            throw wantedButNotInvokedInOrder(wanted, previousInOrder);
-        }
-
-        checkMissingInvocation(invocations, wanted);
+        
     }
 }

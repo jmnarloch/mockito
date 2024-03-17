@@ -65,6 +65,6 @@ import org.mockito.quality.Strictness;
  */
 public class PotentialStubbingProblem extends MockitoException {
     public PotentialStubbingProblem(String message) {
-        super(message);
+        
     }
 }

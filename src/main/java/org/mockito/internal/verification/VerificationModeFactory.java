@@ -9,39 +9,39 @@ import org.mockito.verification.VerificationMode;
 public final class VerificationModeFactory {
 
     public static VerificationMode atLeastOnce() {
-        return atLeast(1);
+        
     }
 
     public static VerificationMode atLeast(int minNumberOfInvocations) {
-        return new AtLeast(minNumberOfInvocations);
+        
     }
 
     public static VerificationMode only() {
-        return new Only(); // TODO make exception message nicer
+         // TODO make exception message nicer
     }
 
     public static Times times(int wantedNumberOfInvocations) {
-        return new Times(wantedNumberOfInvocations);
+        
     }
 
     public static Calls calls(int wantedNumberOfInvocations) {
-        return new Calls(wantedNumberOfInvocations);
+        
     }
 
     public static NoMoreInteractions noMoreInteractions() {
-        return new NoMoreInteractions();
+        
     }
 
     public static NoInteractions noInteractions() {
-        return new NoInteractions();
+        
     }
 
     public static VerificationMode atMostOnce() {
-        return atMost(1);
+        
     }
 
     public static VerificationMode atMost(int maxNumberOfInvocations) {
-        return new AtMost(maxNumberOfInvocations);
+        
     }
 
     /**
@@ -52,8 +52,8 @@ public final class VerificationModeFactory {
      * @since 2.1.0
      */
     public static VerificationMode description(VerificationMode mode, String description) {
-        return new Description(mode, description);
+        
     }
 
-    private VerificationModeFactory() {}
+    private VerificationModeFactory() { }
 }

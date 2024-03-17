@@ -15,11 +15,11 @@ public class StubInfoImpl implements StubInfo, Serializable {
     private final DescribedInvocation stubbedAt;
 
     public StubInfoImpl(DescribedInvocation stubbedAt) {
-        this.stubbedAt = stubbedAt;
+        
     }
 
     @Override
     public Location stubbedAt() {
-        return stubbedAt.getLocation();
+        
     }
 }

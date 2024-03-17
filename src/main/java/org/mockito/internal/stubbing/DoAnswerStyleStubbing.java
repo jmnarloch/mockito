@@ -20,24 +20,22 @@ class DoAnswerStyleStubbing implements Serializable {
     private Strictness stubbingStrictness;
 
     void setAnswers(List<Answer<?>> answers, Strictness stubbingStrictness) {
-        this.stubbingStrictness = stubbingStrictness;
-        this.answers.addAll(answers);
+        
     }
 
     boolean isSet() {
-        return answers.size() > 0;
+        
     }
 
     void clear() {
-        answers.clear();
-        stubbingStrictness = null;
+        
     }
 
     List<Answer<?>> getAnswers() {
-        return answers;
+        
     }
 
     Strictness getStubbingStrictness() {
-        return stubbingStrictness;
+        
     }
 }

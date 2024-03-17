@@ -13,18 +13,6 @@ public class DefaultDoNotMockEnforcer implements DoNotMockEnforcer {
 
     @Override
     public String checkTypeForDoNotMockViolation(Class<?> type) {
-        for (Annotation annotation : type.getAnnotations()) {
-            if (annotation.annotationType().getName().endsWith("org.mockito.DoNotMock")) {
-                String exceptionMessage =
-                        type + " is annotated with @org.mockito.DoNotMock and can't be mocked.";
-                if (DoNotMock.class.equals(annotation.annotationType())) {
-                    exceptionMessage += " " + type.getAnnotation(DoNotMock.class).reason();
-                }
-
-                return exceptionMessage;
-            }
-        }
-
-        return null;
+        
     }
 }

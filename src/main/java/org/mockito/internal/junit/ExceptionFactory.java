@@ -8,7 +8,7 @@ import org.mockito.exceptions.verification.ArgumentsAreDifferent;
 
 public class ExceptionFactory {
 
-    private ExceptionFactory() {}
+    private ExceptionFactory() { }
 
     private static interface ExceptionFactoryImpl {
         AssertionError create(String message, String wanted, String actual);
@@ -43,6 +43,6 @@ public class ExceptionFactory {
      */
     public static AssertionError createArgumentsAreDifferentException(
             String message, String wanted, String actual) {
-        return factory.create(message, wanted, actual);
+        
     }
 }

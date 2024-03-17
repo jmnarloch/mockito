@@ -12,13 +12,11 @@ public class ConsecutiveStubbing<T> extends BaseStubbing<T> {
     private final InvocationContainerImpl invocationContainer;
 
     ConsecutiveStubbing(InvocationContainerImpl invocationContainer) {
-        super(invocationContainer.invokedMock());
-        this.invocationContainer = invocationContainer;
+        
     }
 
     @Override
     public OngoingStubbing<T> thenAnswer(Answer<?> answer) {
-        invocationContainer.addConsecutiveAnswer(answer);
-        return this;
+        
     }
 }

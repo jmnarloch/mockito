@@ -25,18 +25,10 @@ class TypeSupport {
     private final Method isSealed;
 
     private TypeSupport(Method isSealed) {
-        this.isSealed = isSealed;
+        
     }
 
     boolean isSealed(Class<?> type) {
-        if (isSealed == null) {
-            return false;
-        }
-        try {
-            return (boolean) isSealed.invoke(type);
-        } catch (Throwable t) {
-            throw new MockitoException(
-                    "Failed to check if type is sealed using handle " + isSealed, t);
-        }
+        
     }
 }

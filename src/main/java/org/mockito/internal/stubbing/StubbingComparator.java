@@ -18,6 +18,6 @@ public class StubbingComparator implements Comparator<Stubbing> {
 
     @Override
     public int compare(Stubbing o1, Stubbing o2) {
-        return invocationComparator.compare(o1.getInvocation(), o2.getInvocation());
+        
     }
 }

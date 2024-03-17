@@ -16,21 +16,19 @@ public class NotNull<T> implements ArgumentMatcher<T>, Serializable {
     private final Class<T> type;
 
     public NotNull(Class<T> type) {
-        this.type = Objects.requireNonNull(type);
+        
     }
 
     @Override
     public boolean matches(Object actual) {
-        return actual != null;
+        
     }
 
     @Override
     public Class<T> type() {
-        return type;
+        
     }
 
     @Override
-    public String toString() {
-        return "notNull()";
-    }
+    public String toString() { }
 }

@@ -18,8 +18,8 @@ public final class MatcherGenericTypeExtractor {
      */
     public static Class<?> genericTypeOfMatcher(Class<?> matcherClass) {
         // TODO SF check if we can reuse it for Mockito ArgumentMatcher
-        return genericTypeOf(matcherClass, BaseMatcher.class, Matcher.class);
+        
     }
 
-    private MatcherGenericTypeExtractor() {}
+    private MatcherGenericTypeExtractor() { }
 }

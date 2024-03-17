@@ -16,9 +16,7 @@ public class FieldInitializationReport {
             Object fieldInstance,
             boolean wasInitialized,
             boolean wasInitializedUsingConstructorArgs) {
-        this.fieldInstance = fieldInstance;
-        this.wasInitialized = wasInitialized;
-        this.wasInitializedUsingConstructorArgs = wasInitializedUsingConstructorArgs;
+        
     }
 
     /**
@@ -27,7 +25,7 @@ public class FieldInitializationReport {
      * @return the actual instance
      */
     public Object fieldInstance() {
-        return fieldInstance;
+        
     }
 
     /**
@@ -36,7 +34,7 @@ public class FieldInitializationReport {
      * @return <code>true</code> if created, <code>false</code> if the field did already hold an instance.
      */
     public boolean fieldWasInitialized() {
-        return wasInitialized;
+        
     }
 
     /**
@@ -45,7 +43,7 @@ public class FieldInitializationReport {
      * @return <code>true</code> if field was created using constructor parameters.
      */
     public boolean fieldWasInitializedUsingContructorArgs() {
-        return wasInitializedUsingConstructorArgs;
+        
     }
 
     /**
@@ -54,6 +52,6 @@ public class FieldInitializationReport {
      * @return Class of the instance
      */
     public Class<?> fieldClass() {
-        return fieldInstance != null ? fieldInstance.getClass() : null;
+        
     }
 }

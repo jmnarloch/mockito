@@ -18,11 +18,6 @@ public class DefaultInjectionEngine {
 
     public void injectMocksOnFields(
             Set<Field> needingInjection, Set<Object> mocks, Object testClassInstance) {
-        MockInjection.onFields(needingInjection, testClassInstance)
-                .withMocks(mocks)
-                .tryConstructorInjection()
-                .tryPropertyOrFieldInjection()
-                .handleSpyAnnotation()
-                .apply();
+        
     }
 }

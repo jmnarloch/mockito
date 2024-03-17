@@ -22,19 +22,11 @@ public class NoMoreInteractions implements VerificationMode, VerificationInOrder
     @Override
     @SuppressWarnings("unchecked")
     public void verify(VerificationData data) {
-        Invocation unverified = findFirstUnverified(data.getAllInvocations());
-        if (unverified != null) {
-            throw noMoreInteractionsWanted(unverified, (List) data.getAllInvocations());
-        }
+        
     }
 
     @Override
     public void verifyInOrder(VerificationDataInOrder data) {
-        List<Invocation> invocations = data.getAllInvocations();
-        Invocation unverified = findFirstUnverifiedInOrder(data.getOrderingContext(), invocations);
-
-        if (unverified != null) {
-            throw noMoreInteractionsWantedInOrder(unverified);
-        }
+        
     }
 }

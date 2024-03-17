@@ -15,7 +15,7 @@ public class NameBasedCandidateFilter implements MockCandidateFilter {
     private final MockCandidateFilter next;
 
     public NameBasedCandidateFilter(MockCandidateFilter next) {
-        this.next = next;
+        
     }
 
     @Override
@@ -25,33 +25,16 @@ public class NameBasedCandidateFilter implements MockCandidateFilter {
             final List<Field> allRemainingCandidateFields,
             final Object injectee,
             final Field injectMocksField) {
-        if (mocks.size() == 1
-                && anotherCandidateMatchesMockName(
-                        mocks, candidateFieldToBeInjected, allRemainingCandidateFields)) {
-            return OngoingInjector.nop;
-        }
-
-        return next.filterCandidate(
-                tooMany(mocks) ? selectMatchingName(mocks, candidateFieldToBeInjected) : mocks,
-                candidateFieldToBeInjected,
-                allRemainingCandidateFields,
-                injectee,
-                injectMocksField);
+        
     }
 
     private boolean tooMany(Collection<Object> mocks) {
-        return mocks.size() > 1;
+        
     }
 
     private List<Object> selectMatchingName(
             Collection<Object> mocks, Field candidateFieldToBeInjected) {
-        List<Object> mockNameMatches = new ArrayList<>();
-        for (Object mock : mocks) {
-            if (candidateFieldToBeInjected.getName().equals(getMockName(mock).toString())) {
-                mockNameMatches.add(mock);
-            }
-        }
-        return mockNameMatches;
+        
     }
 
     /*
@@ -67,15 +50,6 @@ public class NameBasedCandidateFilter implements MockCandidateFilter {
             final Collection<Object> mocks,
             final Field candidateFieldToBeInjected,
             final List<Field> allRemainingCandidateFields) {
-        String mockName = getMockName(mocks.iterator().next()).toString();
-
-        for (Field otherCandidateField : allRemainingCandidateFields) {
-            if (!otherCandidateField.equals(candidateFieldToBeInjected)
-                    && otherCandidateField.getType().equals(candidateFieldToBeInjected.getType())
-                    && otherCandidateField.getName().equals(mockName)) {
-                return true;
-            }
-        }
-        return false;
+        
     }
 }

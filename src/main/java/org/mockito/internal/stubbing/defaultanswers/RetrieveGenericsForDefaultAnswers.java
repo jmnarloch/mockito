@@ -17,34 +17,7 @@ final class RetrieveGenericsForDefaultAnswers {
 
     static Object returnTypeForMockWithCorrectGenerics(
             InvocationOnMock invocation, AnswerCallback answerCallback) {
-        Class<?> type = invocation.getMethod().getReturnType();
-
-        final Type returnType = invocation.getMethod().getGenericReturnType();
-
-        Object defaultReturnValue = null;
-
-        if (returnType instanceof TypeVariable) {
-            type = findTypeFromGeneric(invocation, (TypeVariable) returnType);
-            if (type != null) {
-                defaultReturnValue = delegateChains(type);
-            }
-        }
-
-        if (defaultReturnValue != null) {
-            return defaultReturnValue;
-        }
-
-        if (type != null) {
-            final MockCreationSettings<?> mockSettings =
-                    MockUtil.getMockSettings(invocation.getMock());
-            if (!MockUtil.typeMockabilityOf(type, mockSettings.getMockMaker()).mockable()) {
-                return null;
-            }
-
-            return answerCallback.apply(type);
-        }
-
-        return answerCallback.apply(null);
+        
     }
 
     /**
@@ -56,28 +29,7 @@ final class RetrieveGenericsForDefaultAnswers {
      * @return a non-null instance if the type has been resolve. Null otherwise.
      */
     private static Object delegateChains(final Class<?> type) {
-        final ReturnsEmptyValues returnsEmptyValues = new ReturnsEmptyValues();
-        Object result = returnsEmptyValues.returnValueFor(type);
-
-        if (result == null) {
-            Class<?> emptyValueForClass = type;
-            while (emptyValueForClass != null && result == null) {
-                final Class<?>[] classes = emptyValueForClass.getInterfaces();
-                for (Class<?> clazz : classes) {
-                    result = returnsEmptyValues.returnValueFor(clazz);
-                    if (result != null) {
-                        break;
-                    }
-                }
-                emptyValueForClass = emptyValueForClass.getSuperclass();
-            }
-        }
-
-        if (result == null) {
-            result = new ReturnsMoreEmptyValues().returnValueFor(type);
-        }
-
-        return result;
+        
     }
 
     /**
@@ -90,18 +42,7 @@ final class RetrieveGenericsForDefaultAnswers {
     private static Class<?> findTypeFromGeneric(
             final InvocationOnMock invocation, final TypeVariable returnType) {
         // Class level
-        final MockCreationSettings mockSettings =
-                MockUtil.getMockHandler(invocation.getMock()).getMockSettings();
-        final GenericMetadataSupport returnTypeSupport =
-                GenericMetadataSupport.inferFrom(mockSettings.getTypeToMock())
-                        .resolveGenericReturnType(invocation.getMethod());
-        final Class<?> rawType = returnTypeSupport.rawType();
-
-        // Method level
-        if (rawType == Object.class) {
-            return findTypeFromGenericInArguments(invocation, returnType);
-        }
-        return rawType;
+        
     }
 
     /**
@@ -113,31 +54,12 @@ final class RetrieveGenericsForDefaultAnswers {
      */
     private static Class<?> findTypeFromGenericInArguments(
             final InvocationOnMock invocation, final TypeVariable returnType) {
-        final Type[] parameterTypes = invocation.getMethod().getGenericParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Type argType = parameterTypes[i];
-            if (returnType.equals(argType)) {
-                Object argument = invocation.getArgument(i);
-
-                if (argument == null) {
-                    return null;
-                }
-
-                return argument.getClass();
-            }
-            if (argType instanceof GenericArrayType) {
-                argType = ((GenericArrayType) argType).getGenericComponentType();
-                if (returnType.equals(argType)) {
-                    return invocation.getArgument(i).getClass();
-                }
-            }
-        }
-        return null;
+        
     }
 
     interface AnswerCallback {
         Object apply(Class<?> type);
     }
 
-    private RetrieveGenericsForDefaultAnswers() {}
+    private RetrieveGenericsForDefaultAnswers() { }
 }

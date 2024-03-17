@@ -80,81 +80,11 @@ public class ReturnsEmptyValues implements Answer<Object>, Serializable {
      */
     @Override
     public Object answer(InvocationOnMock invocation) {
-        if (isToStringMethod(invocation.getMethod())) {
-            Object mock = invocation.getMock();
-            MockName name = MockUtil.getMockName(mock);
-            if (name.isDefault()) {
-                return "Mock for "
-                        + MockUtil.getMockSettings(mock).getTypeToMock().getSimpleName()
-                        + ", hashCode: "
-                        + mock.hashCode();
-            } else {
-                return name.toString();
-            }
-        } else if (isCompareToMethod(invocation.getMethod())) {
-            // see issue 184.
-            // mocks by default should return 0 if references are the same, otherwise some other
-            // value because they are not the same. Hence we return 1 (anything but 0 is good).
-            // Only for compareTo() method by the Comparable interface
-            return invocation.getMock() == invocation.getArgument(0) ? 0 : 1;
-        }
-
-        Class<?> returnType = invocation.getMethod().getReturnType();
-        return returnValueFor(returnType);
+        
     }
 
     Object returnValueFor(Class<?> type) {
-        if (Primitives.isPrimitiveOrWrapper(type)) {
-            return Primitives.defaultValue(type);
-            // new instances are used instead of Collections.emptyList(), etc.
-            // to avoid UnsupportedOperationException if code under test modifies returned
-            // collection
-        } else if (type == Iterable.class) {
-            return new ArrayList<>(0);
-        } else if (type == Collection.class) {
-            return new LinkedList<>();
-        } else if (type == Set.class) {
-            return new HashSet<>();
-        } else if (type == HashSet.class) {
-            return new HashSet<>();
-        } else if (type == SortedSet.class) {
-            return new TreeSet<>();
-        } else if (type == TreeSet.class) {
-            return new TreeSet<>();
-        } else if (type == LinkedHashSet.class) {
-            return new LinkedHashSet<>();
-        } else if (type == List.class) {
-            return new LinkedList<>();
-        } else if (type == LinkedList.class) {
-            return new LinkedList<>();
-        } else if (type == ArrayList.class) {
-            return new ArrayList<>();
-        } else if (type == Map.class) {
-            return new HashMap<>();
-        } else if (type == HashMap.class) {
-            return new HashMap<>();
-        } else if (type == SortedMap.class) {
-            return new TreeMap<>();
-        } else if (type == TreeMap.class) {
-            return new TreeMap<>();
-        } else if (type == LinkedHashMap.class) {
-            return new LinkedHashMap<>();
-        } else if (type == Stream.class) {
-            return Stream.empty();
-        } else if (type == DoubleStream.class) {
-            return DoubleStream.empty();
-        } else if (type == IntStream.class) {
-            return IntStream.empty();
-        } else if (type == LongStream.class) {
-            return LongStream.empty();
-        } else if (type == Duration.class) {
-            return Duration.ZERO;
-        } else if (type == Period.class) {
-            return Period.ZERO;
-        }
-        // Let's not care about the rest of collections.
-
-        return returnCommonEmptyValueFor(type);
+        
     }
 
     /**
@@ -164,15 +94,6 @@ public class ReturnsEmptyValues implements Answer<Object>, Serializable {
      * @return the empty value, or {@code null}
      */
     static Object returnCommonEmptyValueFor(Class<?> type) {
-        if (type == Optional.class) {
-            return Optional.empty();
-        } else if (type == OptionalDouble.class) {
-            return OptionalDouble.empty();
-        } else if (type == OptionalInt.class) {
-            return OptionalInt.empty();
-        } else if (type == OptionalLong.class) {
-            return OptionalLong.empty();
-        }
-        return null;
+        
     }
 }

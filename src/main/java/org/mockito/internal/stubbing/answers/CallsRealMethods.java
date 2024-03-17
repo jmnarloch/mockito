@@ -39,16 +39,11 @@ public class CallsRealMethods implements Answer<Object>, ValidableAnswer, Serial
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        if (Modifier.isAbstract(invocation.getMethod().getModifiers())) {
-            return RETURNS_DEFAULTS.answer(invocation);
-        }
-        return invocation.callRealMethod();
+        
     }
 
     @Override
     public void validateFor(InvocationOnMock invocation) {
-        if (new InvocationInfo(invocation).isAbstract()) {
-            throw cannotCallAbstractRealMethod();
-        }
+        
     }
 }

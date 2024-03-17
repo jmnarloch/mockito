@@ -11,6 +11,6 @@ import org.mockito.exceptions.base.MockitoException;
  */
 public class DoNotMockException extends MockitoException {
     public DoNotMockException(String message) {
-        super(message);
+        
     }
 }

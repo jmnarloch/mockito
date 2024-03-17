@@ -53,8 +53,7 @@ class PluginRegistry {
                     .loadPlugin(DoNotMockEnforcerWithType.class, DoNotMockEnforcer.class);
 
     PluginRegistry() {
-        instantiatorProvider =
-                new PluginLoader(pluginSwitch).loadPlugin(InstantiatorProvider2.class);
+        
     }
 
     /**
@@ -62,7 +61,7 @@ class PluginRegistry {
      */
     StackTraceCleanerProvider getStackTraceCleanerProvider() {
         // TODO we should throw some sensible exception if this is null.
-        return stackTraceCleanerProvider;
+        
     }
 
     /**
@@ -72,7 +71,7 @@ class PluginRegistry {
      * {@link org.mockito.plugins.MockMaker} extension exists or is visible in the current classpath.</p>
      */
     MockMaker getMockMaker() {
-        return mockMaker;
+        
     }
 
     /**
@@ -82,7 +81,7 @@ class PluginRegistry {
      * {@link org.mockito.plugins.MockMaker} extension exists or is visible in the current classpath.</p>
      */
     MemberAccessor getMemberAccessor() {
-        return memberAccessor;
+        
     }
 
     /**
@@ -93,7 +92,7 @@ class PluginRegistry {
      * current classpath.</p>
      */
     InstantiatorProvider2 getInstantiatorProvider() {
-        return instantiatorProvider;
+        
     }
 
     /**
@@ -103,7 +102,7 @@ class PluginRegistry {
      * {@link org.mockito.plugins.AnnotationEngine} extension exists or is visible in the current classpath.</p>
      */
     AnnotationEngine getAnnotationEngine() {
-        return annotationEngine;
+        
     }
 
     /**
@@ -113,7 +112,7 @@ class PluginRegistry {
      * {@link org.mockito.plugins.MockitoLogger} extension exists or is visible in the current classpath.</p>
      */
     MockitoLogger getMockitoLogger() {
-        return mockitoLogger;
+        
     }
 
     /**
@@ -123,7 +122,7 @@ class PluginRegistry {
      * {@link DoNotMockEnforcer} extension exists or is visible in the current classpath.</p>
      */
     DoNotMockEnforcerWithType getDoNotMockEnforcer() {
-        return doNotMockEnforcer;
+        
     }
 
     /**
@@ -132,6 +131,6 @@ class PluginRegistry {
      * @return A list of available mock resolvers or an empty list if none are registered.
      */
     List<MockResolver> getMockResolvers() {
-        return mockResolvers;
+        
     }
 }

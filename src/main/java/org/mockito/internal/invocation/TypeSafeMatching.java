@@ -24,15 +24,15 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
     private static final ConcurrentMap<Class<?>, Class<?>> argumentTypeCache =
             new ConcurrentHashMap<>();
 
-    private TypeSafeMatching() {}
+    private TypeSafeMatching() { }
 
     public static ArgumentMatcherAction matchesTypeSafe() {
-        return TYPE_SAFE_MATCHING_ACTION;
+        
     }
 
     @Override
     public boolean apply(ArgumentMatcher matcher, Object argument) {
-        return isCompatible(matcher, argument) && matcher.matches(argument);
+        
     }
 
     /**
@@ -41,25 +41,11 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ClassCastException}.
      */
     private static boolean isCompatible(ArgumentMatcher<?> argumentMatcher, Object argument) {
-        if (argument == null) {
-            return true;
-        }
-
-        Class<?> expectedArgumentType = getArgumentType(argumentMatcher);
-
-        return expectedArgumentType.isInstance(argument);
+        
     }
 
     private static Class<?> getArgumentType(ArgumentMatcher<?> matcher) {
-        Class<?> argumentMatcherType = matcher.getClass();
-        Class<?> cached = argumentTypeCache.get(argumentMatcherType);
-        // Avoids a lambda allocation on invocations >=2 for worse perf on invocation 1.
-        if (cached != null) {
-            return cached;
-        } else {
-            return argumentTypeCache.computeIfAbsent(
-                    argumentMatcherType, unusedKey -> getArgumentTypeUncached(matcher));
-        }
+        
     }
 
     /**
@@ -67,17 +53,7 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ArgumentMatcher} implementation.
      */
     private static Class<?> getArgumentTypeUncached(ArgumentMatcher<?> argumentMatcher) {
-        Method[] methods = argumentMatcher.getClass().getMethods();
-
-        for (Method method : methods) {
-            if (isMatchesMethod(method)) {
-                return method.getParameterTypes()[0];
-            }
-        }
-        throw new NoSuchMethodError(
-                "Method 'matches(T)' not found in ArgumentMatcher: "
-                        + argumentMatcher
-                        + " !\r\n Please file a bug with this stack trace at: https://github.com/mockito/mockito/issues/new ");
+        
     }
 
     /**
@@ -85,12 +61,6 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ArgumentMatcher#matches(Object)}
      */
     private static boolean isMatchesMethod(Method method) {
-        if (method.getParameterTypes().length != 1) {
-            return false;
-        }
-        if (method.isBridge()) {
-            return false;
-        }
-        return "matches".equals(method.getName());
+        
     }
 }

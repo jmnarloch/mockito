@@ -23,28 +23,24 @@ public class After extends VerificationWrapper<VerificationOverTimeImpl>
      * See javadoc for {@link VerificationWithTimeout}
      */
     public After(long delayMillis, VerificationMode verificationMode) {
-        this(10, delayMillis, verificationMode);
+        
     }
 
     After(long pollingPeriod, long delayMillis, VerificationMode verificationMode) {
-        this(new VerificationOverTimeImpl(pollingPeriod, delayMillis, verificationMode, false));
+        
     }
 
     After(VerificationOverTimeImpl verificationOverTime) {
-        super(verificationOverTime);
+        
     }
 
     @Override
     protected VerificationMode copySelfWithNewVerificationMode(VerificationMode verificationMode) {
-        return new After(wrappedVerification.copyWithVerificationMode(verificationMode));
+        
     }
 
     @Override
     public String toString() {
-        return "Wanted after "
-                + wrappedVerification.getTimer().duration()
-                + " ms: ["
-                + wrappedVerification.getDelegate()
-                + "]";
+        
     }
 }

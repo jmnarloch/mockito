@@ -211,7 +211,7 @@ public interface MockMaker {
     /**
      * Clears all cashes for mocked types and removes all byte code alterations, if possible.
      */
-    default void clearAllCaches() {}
+    default void clearAllCaches() { }
 
     /**
      * Carries the mockability information

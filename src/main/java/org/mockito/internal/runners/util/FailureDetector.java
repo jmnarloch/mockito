@@ -16,11 +16,10 @@ public class FailureDetector extends RunListener {
 
     @Override
     public void testFailure(Failure failure) throws Exception {
-        super.testFailure(failure);
-        failed = true;
+        
     }
 
     public boolean isSuccessful() {
-        return !failed;
+        
     }
 }

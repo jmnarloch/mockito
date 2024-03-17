@@ -105,7 +105,7 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class Silent extends MockitoJUnitRunner {
         public Silent(Class<?> klass) throws InvocationTargetException {
-            super(new RunnerFactory().create(klass));
+            
         }
     }
 
@@ -120,7 +120,7 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class Strict extends MockitoJUnitRunner {
         public Strict(Class<?> klass) throws InvocationTargetException {
-            super(new StrictRunner(new RunnerFactory().createStrict(klass), klass));
+            
         }
     }
 
@@ -142,7 +142,7 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class StrictStubs extends MockitoJUnitRunner {
         public StrictStubs(Class<?> klass) throws InvocationTargetException {
-            super(new StrictRunner(new RunnerFactory().createStrictStubs(klass), klass));
+            
         }
     }
 
@@ -151,26 +151,26 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
     public MockitoJUnitRunner(Class<?> klass) throws InvocationTargetException {
         // by default, StrictRunner is used. We can change that potentially based on feedback from
         // users
-        this(new StrictRunner(new RunnerFactory().createStrict(klass), klass));
+        
     }
 
     MockitoJUnitRunner(InternalRunner runner) {
-        this.runner = runner;
+        
     }
 
     @Override
     public void run(final RunNotifier notifier) {
-        runner.run(notifier);
+        
     }
 
     @Override
     public Description getDescription() {
-        return runner.getDescription();
+        
     }
 
     @Override
     public void filter(Filter filter) throws NoTestsRemainException {
         // filter is required because without it UnrootedTests show up in Eclipse
-        runner.filter(filter);
+        
     }
 }

@@ -26,23 +26,18 @@ public class MockitoException extends RuntimeException {
 
     // TODO lazy filtered stacktrace initialization
     public MockitoException(String message, Throwable t) {
-        super(message, t);
-        filterStackTrace();
+        
     }
 
     public MockitoException(String message) {
-        super(message);
-        filterStackTrace();
+        
     }
 
     private void filterStackTrace() {
-        unfilteredStackTrace = getStackTrace();
-
-        ConditionalStackTraceFilter filter = new ConditionalStackTraceFilter();
-        filter.filter(this);
+        
     }
 
     public StackTraceElement[] getUnfilteredStackTrace() {
-        return unfilteredStackTrace;
+        
     }
 }

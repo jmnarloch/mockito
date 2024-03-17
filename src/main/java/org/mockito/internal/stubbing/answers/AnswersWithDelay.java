@@ -27,20 +27,16 @@ public class AnswersWithDelay implements Answer<Object>, ValidableAnswer, Serial
     private final Answer<Object> answer;
 
     public AnswersWithDelay(final long sleepyTime, final Answer<Object> answer) {
-        this.sleepyTime = sleepyTime;
-        this.answer = answer;
+        
     }
 
     @Override
     public Object answer(final InvocationOnMock invocation) throws Throwable {
-        MILLISECONDS.sleep(sleepyTime);
-        return answer.answer(invocation);
+        
     }
 
     @Override
     public void validateFor(final InvocationOnMock invocation) {
-        if (answer instanceof ValidableAnswer) {
-            ((ValidableAnswer) answer).validateFor(invocation);
-        }
+        
     }
 }

@@ -13,16 +13,16 @@ public class EndsWith implements ArgumentMatcher<String>, Serializable {
     private final String suffix;
 
     public EndsWith(String suffix) {
-        this.suffix = suffix;
+        
     }
 
     @Override
     public boolean matches(String actual) {
-        return actual != null && actual.endsWith(suffix);
+        
     }
 
     @Override
     public String toString() {
-        return "endsWith(\"" + suffix + "\")";
+        
     }
 }

@@ -30,8 +30,7 @@ public class InstanceField {
      * @param instance The instance from which the field shall be accessed.
      */
     public InstanceField(Field field, Object instance) {
-        this.field = Checks.checkNotNull(field, "field");
-        this.instance = Checks.checkNotNull(instance, "instance");
+        
     }
 
     /**
@@ -41,7 +40,7 @@ public class InstanceField {
      * @see FieldReader
      */
     public Object read() {
-        return reader().read();
+        
     }
 
     /**
@@ -50,12 +49,7 @@ public class InstanceField {
      * @param value The value that should be written to the field.
      */
     public void set(Object value) {
-        MemberAccessor accessor = Plugins.getMemberAccessor();
-        try {
-            accessor.set(field, instance, value);
-        } catch (IllegalAccessException e) {
-            throw new MockitoException("Access to " + field + " was denied", e);
-        }
+        
     }
 
     /**
@@ -64,7 +58,7 @@ public class InstanceField {
      * @return <code>true</code> if <code>null</code>, else <code>false</code>.
      */
     public boolean isNull() {
-        return reader().isNull();
+        
     }
 
     /**
@@ -74,7 +68,7 @@ public class InstanceField {
      * @return <code>true</code> if the field is annotated by this annotation, else <code>false</code>.
      */
     public boolean isAnnotatedBy(Class<? extends Annotation> annotationClass) {
-        return field.isAnnotationPresent(annotationClass);
+        
     }
 
     /**
@@ -83,7 +77,7 @@ public class InstanceField {
      * @return <code>true</code> if the field is synthetic, else <code>false</code>.
      */
     public boolean isSynthetic() {
-        return field.isSynthetic();
+        
     }
 
     /**
@@ -94,7 +88,7 @@ public class InstanceField {
      * @return The annotation instance.
      */
     public <A extends Annotation> A annotation(Class<A> annotationClass) {
-        return field.getAnnotation(annotationClass);
+        
     }
 
     /**
@@ -103,14 +97,11 @@ public class InstanceField {
      * @return The actual {@link Field} instance.
      */
     public Field jdkField() {
-        return field;
+        
     }
 
     private FieldReader reader() {
-        if (fieldReader == null) {
-            fieldReader = new FieldReader(instance, field);
-        }
-        return fieldReader;
+        
     }
 
     /**
@@ -119,31 +110,21 @@ public class InstanceField {
      * @return Name of the field.
      */
     public String name() {
-        return field.getName();
+        
     }
 
     @Override
     public String toString() {
-        return name();
+        
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        InstanceField that = (InstanceField) o;
-        return field.equals(that.field) && instance.equals(that.instance);
+        
     }
 
     @Override
     public int hashCode() {
-        int result = field.hashCode();
-        result = 31 * result + instance.hashCode();
-        return result;
+        
     }
 }

@@ -71,14 +71,7 @@ public final class MockitoAnnotations {
      * @return A closable to close when completing any tests in {@code testClass}.
      */
     public static AutoCloseable openMocks(Object testClass) {
-        if (testClass == null) {
-            throw new MockitoException(
-                    "testClass cannot be null. For info how to use @Mock annotations see examples in javadoc for MockitoAnnotations class");
-        }
-
-        AnnotationEngine annotationEngine =
-                new GlobalConfiguration().tryGetPluginAnnotationEngine();
-        return annotationEngine.process(testClass.getClass(), testClass);
+        
     }
 
     /**
@@ -95,17 +88,8 @@ public final class MockitoAnnotations {
      */
     @Deprecated
     public static void initMocks(Object testClass) {
-        try {
-            openMocks(testClass).close();
-        } catch (Exception e) {
-            throw new MockitoException(
-                    join(
-                            "Failed to release mocks",
-                            "",
-                            "This should not happen unless you are using a third-party mock maker"),
-                    e);
-        }
+        
     }
 
-    private MockitoAnnotations() {}
+    private MockitoAnnotations() { }
 }

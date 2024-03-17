@@ -24,11 +24,7 @@ class MockFeatures<T> {
             SerializableMode serializableMode,
             boolean stripAnnotations,
             Answer defaultAnswer) {
-        this.mockedType = mockedType;
-        this.interfaces = Collections.unmodifiableSet(interfaces);
-        this.serializableMode = serializableMode;
-        this.stripAnnotations = stripAnnotations;
-        this.defaultAnswer = defaultAnswer;
+        
     }
 
     public static <T> MockFeatures<T> withMockFeatures(
@@ -37,7 +33,6 @@ class MockFeatures<T> {
             SerializableMode serializableMode,
             boolean stripAnnotations,
             Answer defaultAnswer) {
-        return new MockFeatures<T>(
-                mockedType, interfaces, serializableMode, stripAnnotations, defaultAnswer);
+        
     }
 }

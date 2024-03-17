@@ -20,51 +20,33 @@ public class Returns implements Answer<Object>, ValidableAnswer, Serializable {
     private final Object value;
 
     public Returns(Object value) {
-        this.value = value;
+        
     }
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        return KotlinInlineClassUtil.unboxUnderlyingValueIfNeeded(invocation, value);
+        
     }
 
     @Override
     public void validateFor(InvocationOnMock invocation) {
-        InvocationInfo invocationInfo = new InvocationInfo(invocation);
-        if (invocationInfo.isVoid()) {
-            throw cannotStubVoidMethodWithAReturnValue(invocationInfo.getMethodName());
-        }
-
-        if (returnsNull() && invocationInfo.returnsPrimitive()) {
-            throw wrongTypeOfReturnValue(
-                    invocationInfo.printMethodReturnType(), "null", invocationInfo.getMethodName());
-        }
-
-        if (!returnsNull()
-                && !invocationInfo.isValidReturnType(returnType())
-                && !KotlinInlineClassUtil.isInlineClassWithAssignableUnderlyingType(
-                        returnType(), invocationInfo.getMethod().getReturnType())) {
-            throw wrongTypeOfReturnValue(
-                    invocationInfo.printMethodReturnType(),
-                    printReturnType(),
-                    invocationInfo.getMethodName());
-        }
+        
     }
 
     private String printReturnType() {
-        return value.getClass().getSimpleName();
+        
     }
 
     private Class<?> returnType() {
-        return value.getClass();
+        
     }
 
     private boolean returnsNull() {
-        return value == null;
+        
     }
 
     @Override
     public String toString() {
-        return "Returns: " + value;
+        
     }
 }

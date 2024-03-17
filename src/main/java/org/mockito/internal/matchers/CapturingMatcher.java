@@ -27,62 +27,35 @@ public class CapturingMatcher<T> implements ArgumentMatcher<T>, CapturesArgument
     private final Lock writeLock = lock.writeLock();
 
     public CapturingMatcher(final Class<? extends T> clazz) {
-        this.clazz = Objects.requireNonNull(clazz);
+        
     }
 
     @Override
     public boolean matches(Object argument) {
-        if (argument == null) {
-            return true;
-        }
-
-        if (Primitives.isPrimitiveOrWrapper(clazz)) {
-            return Primitives.isAssignableFromWrapper(clazz, argument.getClass());
-        }
-
-        return clazz.isAssignableFrom(argument.getClass());
+        
     }
 
     @Override
     public String toString() {
-        return "<Capturing argument: " + clazz.getSimpleName() + ">";
+        
     }
 
     public T getLastValue() {
-        readLock.lock();
-        try {
-            if (arguments.isEmpty()) {
-                throw noArgumentValueWasCaptured();
-            }
-
-            return arguments.get(arguments.size() - 1);
-        } finally {
-            readLock.unlock();
-        }
+        
     }
 
     public List<T> getAllValues() {
-        readLock.lock();
-        try {
-            return new ArrayList<>(arguments);
-        } finally {
-            readLock.unlock();
-        }
+        
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void captureFrom(Object argument) {
-        writeLock.lock();
-        try {
-            this.arguments.add((T) argument);
-        } finally {
-            writeLock.unlock();
-        }
+        
     }
 
     @Override
     public Class<?> type() {
-        return clazz;
+        
     }
 }

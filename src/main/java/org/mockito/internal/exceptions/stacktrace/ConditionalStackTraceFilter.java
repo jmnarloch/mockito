@@ -16,10 +16,6 @@ public class ConditionalStackTraceFilter implements Serializable {
     private final StackTraceFilter filter = new StackTraceFilter();
 
     public void filter(Throwable throwable) {
-        if (!config.cleansStackTrace()) {
-            return;
-        }
-        StackTraceElement[] filtered = filter.filter(throwable.getStackTrace(), true);
-        throwable.setStackTrace(filtered);
+        
     }
 }

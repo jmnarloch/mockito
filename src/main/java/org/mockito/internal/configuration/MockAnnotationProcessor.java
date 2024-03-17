@@ -25,80 +25,16 @@ import org.mockito.quality.Strictness;
 public class MockAnnotationProcessor implements FieldAnnotationProcessor<Mock> {
     @Override
     public Object process(Mock annotation, Field field) {
-        return processAnnotationForMock(
-                annotation, field.getType(), field::getGenericType, field.getName());
+        
     }
 
     @SuppressWarnings("deprecation")
     public static Object processAnnotationForMock(
             Mock annotation, Class<?> type, Supplier<Type> genericType, String name) {
-        MockSettings mockSettings = Mockito.withSettings();
-        if (annotation.extraInterfaces().length > 0) { // never null
-            mockSettings.extraInterfaces(annotation.extraInterfaces());
-        }
-        if ("".equals(annotation.name())) {
-            mockSettings.name(name);
-        } else {
-            mockSettings.name(annotation.name());
-        }
-        if (annotation.serializable()) {
-            mockSettings.serializable();
-        }
-        if (annotation.stubOnly()) {
-            mockSettings.stubOnly();
-        }
-        if (annotation.lenient()) {
-            mockSettings.lenient();
-        }
-        if (annotation.strictness() != Mock.Strictness.TEST_LEVEL_DEFAULT) {
-            mockSettings.strictness(Strictness.valueOf(annotation.strictness().toString()));
-        }
-        if (!annotation.mockMaker().isEmpty()) {
-            mockSettings.mockMaker(annotation.mockMaker());
-        }
-        if (annotation.withoutAnnotations()) {
-            mockSettings.withoutAnnotations();
-        }
-
-        mockSettings.genericTypeToMock(genericType.get());
-
-        // see @Mock answer default value
-        mockSettings.defaultAnswer(annotation.answer());
-
-        if (type == MockedStatic.class) {
-            return Mockito.mockStatic(
-                    inferParameterizedType(
-                            genericType.get(), name, MockedStatic.class.getSimpleName()),
-                    mockSettings);
-        } else if (type == MockedConstruction.class) {
-            return Mockito.mockConstruction(
-                    inferParameterizedType(
-                            genericType.get(), name, MockedConstruction.class.getSimpleName()),
-                    mockSettings);
-        } else {
-            return Mockito.mock(type, mockSettings);
-        }
+        
     }
 
     static Class<?> inferParameterizedType(Type type, String name, String sort) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            Type[] arguments = parameterizedType.getActualTypeArguments();
-            if (arguments.length == 1) {
-                if (arguments[0] instanceof Class<?>) {
-                    return (Class<?>) arguments[0];
-                }
-            }
-        }
-        throw new MockitoException(
-                join(
-                        "Mockito cannot infer a static mock from a raw type for " + name,
-                        "",
-                        "Instead of @Mock " + sort + " you need to specify a parameterized type",
-                        "For example, if you would like to mock Sample.class, specify",
-                        "",
-                        "@Mock " + sort + "<Sample>",
-                        "",
-                        "as the type parameter. If the type is itself parameterized, it should be specified as raw type."));
+        
     }
 }

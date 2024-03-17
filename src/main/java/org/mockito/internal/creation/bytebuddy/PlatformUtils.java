@@ -10,20 +10,13 @@ package org.mockito.internal.creation.bytebuddy;
  * @author Ashley Scopes
  */
 final class PlatformUtils {
-    private PlatformUtils() {
-        // Static-only class.
-    }
+    private PlatformUtils() { }
 
     static boolean isAndroidPlatform() {
-        return System.getProperty("java.specification.vendor", "")
-                .toLowerCase()
-                .contains("android");
+        
     }
 
     static boolean isProbablyTermuxEnvironment() {
-        boolean isLinux = System.getProperty("os.name", "").equalsIgnoreCase("linux");
-        boolean isInTermuxData =
-                System.getProperty("java.home", "").toLowerCase().contains("/com.termux/");
-        return isLinux && isInTermuxData;
+        
     }
 }

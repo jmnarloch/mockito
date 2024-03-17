@@ -37,7 +37,7 @@ public class VerificationOverTimeImpl implements VerificationMode {
             long durationMillis,
             VerificationMode delegate,
             boolean returnOnSuccess) {
-        this(pollingPeriodMillis, delegate, returnOnSuccess, new Timer(durationMillis));
+        
     }
 
     /**
@@ -56,10 +56,7 @@ public class VerificationOverTimeImpl implements VerificationMode {
             VerificationMode delegate,
             boolean returnOnSuccess,
             Timer timer) {
-        this.pollingPeriodMillis = pollingPeriodMillis;
-        this.delegate = delegate;
-        this.returnOnSuccess = returnOnSuccess;
-        this.timer = timer;
+        
     }
 
     /**
@@ -79,68 +76,38 @@ public class VerificationOverTimeImpl implements VerificationMode {
      */
     @Override
     public void verify(VerificationData data) {
-        AssertionError error = null;
-
-        timer.start();
-        while (timer.isCounting()) {
-            try {
-                delegate.verify(data);
-
-                if (returnOnSuccess) {
-                    return;
-                } else {
-                    error = null;
-                }
-            } catch (AssertionError e) {
-                error = handleVerifyException(e);
-            }
-        }
-
-        if (error != null) {
-            throw error;
-        }
+        
     }
 
     private AssertionError handleVerifyException(AssertionError e) {
-        if (canRecoverFromFailure(delegate)) {
-            sleep(pollingPeriodMillis);
-            return e;
-        } else {
-            throw e;
-        }
+        
     }
 
     protected boolean canRecoverFromFailure(VerificationMode verificationMode) {
-        return !(verificationMode instanceof AtMost
-                || verificationMode instanceof NoMoreInteractions);
+        
     }
 
     public VerificationOverTimeImpl copyWithVerificationMode(VerificationMode verificationMode) {
-        return new VerificationOverTimeImpl(
-                pollingPeriodMillis, timer.duration(), verificationMode, returnOnSuccess);
+        
     }
 
     private void sleep(long sleep) {
-        try {
-            Thread.sleep(sleep);
-        } catch (InterruptedException ie) {
-            throw new RuntimeException("Thread sleep has been interrupted", ie);
-        }
+        
     }
 
     public boolean isReturnOnSuccess() {
-        return returnOnSuccess;
+        
     }
 
     public long getPollingPeriodMillis() {
-        return pollingPeriodMillis;
+        
     }
 
     public Timer getTimer() {
-        return timer;
+        
     }
 
     public VerificationMode getDelegate() {
-        return delegate;
+        
     }
 }

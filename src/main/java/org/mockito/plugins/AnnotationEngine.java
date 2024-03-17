@@ -30,6 +30,6 @@ public interface AnnotationEngine {
     class NoAction implements AutoCloseable {
 
         @Override
-        public void close() {}
+        public void close() { }
     }
 }

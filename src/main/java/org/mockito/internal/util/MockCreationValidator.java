@@ -19,46 +19,23 @@ import org.mockito.plugins.MockMaker.TypeMockability;
 public class MockCreationValidator {
 
     public void validateType(Class<?> classToMock, String mockMaker) {
-        TypeMockability typeMockability = MockUtil.typeMockabilityOf(classToMock, mockMaker);
-        if (!typeMockability.mockable()) {
-            throw cannotMockClass(classToMock, typeMockability.nonMockableReason());
-        }
+        
     }
 
     public void validateExtraInterfaces(
             Class<?> classToMock, Collection<Class<?>> extraInterfaces) {
-        if (extraInterfaces == null) {
-            return;
-        }
-
-        for (Class<?> i : extraInterfaces) {
-            if (classToMock == i) {
-                throw extraInterfacesCannotContainMockedType(classToMock);
-            }
-        }
+        
     }
 
     public void validateMockedType(Class<?> classToMock, Object spiedInstance) {
-        if (classToMock == null || spiedInstance == null) {
-            return;
-        }
-        if (!classToMock.equals(spiedInstance.getClass())) {
-            throw mockedTypeIsInconsistentWithSpiedInstanceType(classToMock, spiedInstance);
-        }
+        
     }
 
     public void validateDelegatedInstance(Class<?> classToMock, Object delegatedInstance) {
-        if (classToMock == null || delegatedInstance == null) {
-            return;
-        }
-        if (delegatedInstance.getClass().isAssignableFrom(classToMock)) {
-            throw mockedTypeIsInconsistentWithDelegatedInstanceType(classToMock, delegatedInstance);
-        }
+        
     }
 
     public void validateConstructorUse(boolean usingConstructor, SerializableMode mode) {
-        if (usingConstructor && mode == SerializableMode.ACROSS_CLASSLOADERS) {
-            throw usingConstructorWithFancySerializable(mode);
-        }
+        
     }
 }

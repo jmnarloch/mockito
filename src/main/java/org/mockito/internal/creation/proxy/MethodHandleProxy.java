@@ -20,24 +20,12 @@ class MethodHandleProxy implements ProxyRealMethod {
     private final MethodHandles.Lookup lookup;
 
     MethodHandleProxy() throws Throwable {
-        lookup = MethodHandles.lookup();
+        
     }
 
     @Override
     public RealMethod resolve(Object proxy, Method method, Object[] args) {
-        try {
-            return new MethodHandleRealMethod(
-                    lookup.findSpecial(
-                                    method.getDeclaringClass(),
-                                    method.getName(),
-                                    MethodType.methodType(
-                                            method.getReturnType(), method.getParameterTypes()),
-                                    method.getDeclaringClass())
-                            .bindTo(proxy),
-                    args);
-        } catch (Throwable ignored) {
-            return RealMethod.IsIllegal.INSTANCE;
-        }
+        
     }
 
     @SuppressSignatureCheck
@@ -46,28 +34,12 @@ class MethodHandleProxy implements ProxyRealMethod {
         private final Constructor<MethodHandles.Lookup> constructor;
 
         LegacyVersion() throws Throwable {
-            try {
-                Class.forName("java.lang.Module");
-                throw new RuntimeException("Must not be used when modules are available");
-            } catch (ClassNotFoundException ignored) {
-            }
-            constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-            constructor.setAccessible(true);
+            
         }
 
         @Override
         public RealMethod resolve(Object proxy, Method method, Object[] args) {
-            try {
-                return new MethodHandleRealMethod(
-                        constructor
-                                .newInstance(method.getDeclaringClass())
-                                .in(method.getDeclaringClass())
-                                .unreflectSpecial(method, method.getDeclaringClass())
-                                .bindTo(proxy),
-                        args);
-            } catch (Throwable ignored) {
-                return RealMethod.IsIllegal.INSTANCE;
-            }
+            
         }
     }
 
@@ -80,18 +52,15 @@ class MethodHandleProxy implements ProxyRealMethod {
         private final Object[] args;
 
         private MethodHandleRealMethod(MethodHandle handle, Object[] args) {
-            this.handle = handle;
-            this.args = args;
+            
         }
 
         @Override
-        public boolean isInvokable() {
-            return true;
-        }
+        public boolean isInvokable() { }
 
         @Override
         public Object invoke() throws Throwable {
-            return handle.invokeWithArguments(args);
+            
         }
     }
 }

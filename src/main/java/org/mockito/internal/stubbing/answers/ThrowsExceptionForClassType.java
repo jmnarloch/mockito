@@ -14,12 +14,11 @@ public class ThrowsExceptionForClassType extends AbstractThrowsException impleme
     private final Class<? extends Throwable> throwableClass;
 
     public ThrowsExceptionForClassType(Class<? extends Throwable> throwableClass) {
-        this.throwableClass = throwableClass;
+        
     }
 
     @Override
     protected Throwable getThrowable() {
-        Instantiator instantiator = Plugins.getInstantiatorProvider().getInstantiator(null);
-        return instantiator.newInstance(throwableClass);
+        
     }
 }

@@ -26,12 +26,7 @@ public class MockitoAssertionError extends AssertionError {
     private final StackTraceElement[] unfilteredStackTrace;
 
     public MockitoAssertionError(String message) {
-        super(message);
-
-        unfilteredStackTrace = getStackTrace();
-
-        ConditionalStackTraceFilter filter = new ConditionalStackTraceFilter();
-        filter.filter(this);
+        
     }
 
     /**
@@ -41,9 +36,7 @@ public class MockitoAssertionError extends AssertionError {
      * @since 2.1.0
      */
     public MockitoAssertionError(MockitoAssertionError error, String message) {
-        super(message + "\n" + error.getMessage());
-        super.setStackTrace(error.getStackTrace());
-        unfilteredStackTrace = error.getUnfilteredStackTrace();
+        
     }
 
     /**
@@ -53,12 +46,10 @@ public class MockitoAssertionError extends AssertionError {
      * @since 3.3.13
      */
     public MockitoAssertionError(AssertionError error, String message) {
-        super(message + "\n" + error.getMessage());
-        unfilteredStackTrace = error.getStackTrace();
-        super.setStackTrace(unfilteredStackTrace);
+        
     }
 
     public StackTraceElement[] getUnfilteredStackTrace() {
-        return unfilteredStackTrace;
+        
     }
 }

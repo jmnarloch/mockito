@@ -43,29 +43,12 @@ public class InjectingAnnotationEngine implements AnnotationEngine {
      */
     @Override
     public AutoCloseable process(Class<?> clazz, Object testInstance) {
-        List<AutoCloseable> closeables = new ArrayList<>();
-        closeables.addAll(processIndependentAnnotations(testInstance.getClass(), testInstance));
-        closeables.add(injectCloseableMocks(testInstance));
-        return () -> {
-            for (AutoCloseable closeable : closeables) {
-                closeable.close();
-            }
-        };
+        
     }
 
     private List<AutoCloseable> processIndependentAnnotations(
             final Class<?> clazz, final Object testInstance) {
-        List<AutoCloseable> closeables = new ArrayList<>();
-        Class<?> classContext = clazz;
-        while (classContext != Object.class) {
-            // this will create @Mocks, @Captors, etc:
-            closeables.add(delegate.process(classContext, testInstance));
-            // this will create @Spies:
-            closeables.add(spyAnnotationEngine.process(classContext, testInstance));
-
-            classContext = classContext.getSuperclass();
-        }
-        return closeables;
+        
     }
 
     /**
@@ -75,11 +58,7 @@ public class InjectingAnnotationEngine implements AnnotationEngine {
      */
     @Deprecated
     public void injectMocks(Object testClassInstance) {
-        try {
-            injectCloseableMocks(testClassInstance).close();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        
     }
 
     /**
@@ -92,32 +71,12 @@ public class InjectingAnnotationEngine implements AnnotationEngine {
      *            Test class, usually <code>this</code>
      */
     private AutoCloseable injectCloseableMocks(final Object testClassInstance) {
-        Class<?> clazz = testClassInstance.getClass();
-        Set<Field> mockDependentFields = new HashSet<>();
-        Set<Object> mocks = newMockSafeHashSet();
-
-        while (clazz != Object.class) {
-            new InjectMocksScanner(clazz).addTo(mockDependentFields);
-            new MockScanner(testClassInstance, clazz).addPreparedMocks(mocks);
-            onInjection(testClassInstance, clazz, mockDependentFields, mocks);
-            clazz = clazz.getSuperclass();
-        }
-
-        new DefaultInjectionEngine()
-                .injectMocksOnFields(mockDependentFields, mocks, testClassInstance);
-
-        return () -> {
-            for (Object mock : mocks) {
-                if (mock instanceof ScopedMock) {
-                    ((ScopedMock) mock).closeOnDemand();
-                }
-            }
-        };
+        
     }
 
     protected void onInjection(
             Object testClassInstance,
             Class<?> clazz,
             Set<Field> mockDependentFields,
-            Set<Object> mocks) {}
+            Set<Object> mocks) { }
 }

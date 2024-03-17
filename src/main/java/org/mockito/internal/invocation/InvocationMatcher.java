@@ -33,53 +33,42 @@ public class InvocationMatcher implements MatchableInvocation, DescribedInvocati
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public InvocationMatcher(Invocation invocation, List<ArgumentMatcher> matchers) {
-        this.invocation = invocation;
-        if (matchers.isEmpty()) {
-            this.matchers = (List) invocation.getArgumentsAsMatchers();
-        } else {
-            this.matchers = (List) matchers;
-        }
+        
     }
 
     @SuppressWarnings("rawtypes")
     public InvocationMatcher(Invocation invocation) {
-        this(invocation, Collections.<ArgumentMatcher>emptyList());
+        
     }
 
     public static List<InvocationMatcher> createFrom(List<Invocation> invocations) {
-        LinkedList<InvocationMatcher> out = new LinkedList<>();
-        for (Invocation i : invocations) {
-            out.add(new InvocationMatcher(i));
-        }
-        return out;
+        
     }
 
     public Method getMethod() {
-        return invocation.getMethod();
+        
     }
 
     @Override
     public Invocation getInvocation() {
-        return invocation;
+        
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public List<ArgumentMatcher> getMatchers() {
-        return (List) matchers;
+        
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public String toString() {
-        return new PrintSettings().print((List) matchers, invocation);
+        
     }
 
     @Override
     public boolean matches(Invocation candidate) {
-        return invocation.getMock() == candidate.getMock()
-                && hasSameMethod(candidate)
-                && argumentsMatch(candidate);
+        
     }
 
     /**
@@ -87,23 +76,7 @@ public class InvocationMatcher implements MatchableInvocation, DescribedInvocati
      */
     @Override
     public boolean hasSimilarMethod(Invocation candidate) {
-        String wantedMethodName = getMethod().getName();
-        String candidateMethodName = candidate.getMethod().getName();
-
-        if (!wantedMethodName.equals(candidateMethodName)) {
-            return false;
-        }
-        if (candidate.isVerified()) {
-            return false;
-        }
-        if (getInvocation().getMock() != candidate.getMock()) {
-            return false;
-        }
-        if (hasSameMethod(candidate)) {
-            return true;
-        }
-
-        return !argumentsMatch(candidate);
+        
     }
 
     @Override
@@ -111,48 +84,25 @@ public class InvocationMatcher implements MatchableInvocation, DescribedInvocati
         // not using method.equals() for 1 good reason:
         // sometimes java generates forwarding methods when generics are in play see
         // JavaGenericsForwardingMethodsTest
-        Method m1 = invocation.getMethod();
-        Method m2 = candidate.getMethod();
-
-        if (m1.getName() != null && m1.getName().equals(m2.getName())) {
-            /* Avoid unnecessary cloning */
-            Class<?>[] params1 = m1.getParameterTypes();
-            Class<?>[] params2 = m2.getParameterTypes();
-            return Arrays.equals(params1, params2);
-        }
-        return false;
+        
     }
 
     @Override
     public Location getLocation() {
-        return invocation.getLocation();
+        
     }
 
     @Override
     public void captureArgumentsFrom(Invocation invocation) {
-        MatcherApplicationStrategy strategy =
-                getMatcherApplicationStrategyFor(invocation, matchers);
-        strategy.forEachMatcherAndArgument(captureArgument());
+        
     }
 
     private ArgumentMatcherAction captureArgument() {
-        return new ArgumentMatcherAction() {
-
-            @Override
-            public boolean apply(ArgumentMatcher<?> matcher, Object argument) {
-                if (matcher instanceof CapturesArguments) {
-                    ((CapturesArguments) matcher).captureFrom(argument);
-                }
-
-                return true;
-            }
-        };
+        
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private boolean argumentsMatch(Invocation actual) {
-        List matchers = getMatchers();
-        return getMatcherApplicationStrategyFor(actual, matchers)
-                .forEachMatcherAndArgument(matchesTypeSafe());
+        
     }
 }

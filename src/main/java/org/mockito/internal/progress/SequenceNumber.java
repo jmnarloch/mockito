@@ -9,8 +9,8 @@ public final class SequenceNumber {
     private static int sequenceNumber = 1;
 
     public static synchronized int next() {
-        return sequenceNumber++;
+        
     }
 
-    private SequenceNumber() {}
+    private SequenceNumber() { }
 }

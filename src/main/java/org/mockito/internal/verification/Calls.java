@@ -22,29 +22,21 @@ public class Calls implements VerificationMode, VerificationInOrderMode {
     final int wantedCount;
 
     public Calls(int wantedNumberOfInvocations) {
-        if (wantedNumberOfInvocations <= 0) {
-            throw new MockitoException("Negative and zero values are not allowed here");
-        }
-        this.wantedCount = wantedNumberOfInvocations;
+        
     }
 
     @Override
     public void verify(VerificationData data) {
-        throw new MockitoException("calls is only intended to work with InOrder");
+        
     }
 
     @Override
     public void verifyInOrder(VerificationDataInOrder data) {
-        List<Invocation> allInvocations = data.getAllInvocations();
-        MatchableInvocation wanted = data.getWanted();
-
-        checkMissingInvocation(allInvocations, wanted, data.getOrderingContext());
-        checkNumberOfInvocationsNonGreedy(
-                allInvocations, wanted, wantedCount, data.getOrderingContext());
+        
     }
 
     @Override
     public String toString() {
-        return "Wanted invocations count (non-greedy): " + wantedCount;
+        
     }
 }

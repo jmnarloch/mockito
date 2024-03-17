@@ -20,30 +20,6 @@ public class ReturnsMocks implements Answer<Object>, Serializable {
 
     @Override
     public Object answer(final InvocationOnMock invocation) throws Throwable {
-        Object defaultReturnValue = delegate.answer(invocation);
-
-        if (defaultReturnValue != null) {
-            return defaultReturnValue;
-        }
-
-        return RetrieveGenericsForDefaultAnswers.returnTypeForMockWithCorrectGenerics(
-                invocation,
-                new RetrieveGenericsForDefaultAnswers.AnswerCallback() {
-                    @Override
-                    public Object apply(Class<?> type) {
-                        if (type == null) {
-                            return null;
-                        }
-
-                        MockCreationSettings<?> mockSettings =
-                                MockUtil.getMockSettings(invocation.getMock());
-
-                        return Mockito.mock(
-                                type,
-                                new MockSettingsImpl<>()
-                                        .defaultAnswer(ReturnsMocks.this)
-                                        .mockMaker(mockSettings.getMockMaker()));
-                    }
-                });
+        
     }
 }

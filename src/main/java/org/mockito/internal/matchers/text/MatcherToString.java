@@ -25,29 +25,8 @@ final class MatcherToString {
      * @return
      */
     static String toString(ArgumentMatcher<?> matcher) {
-        Class<?> cls = matcher.getClass();
-        while (cls != Object.class) {
-            Method[] methods = cls.getDeclaredMethods();
-            for (Method m : methods) {
-                if (isToStringMethod(m)) {
-                    return matcher.toString();
-                }
-            }
-            cls = cls.getSuperclass();
-        }
-
-        String matcherName;
-        Class<?> matcherClass = matcher.getClass();
-        // Lambdas have non-empty getSimpleName() (despite being synthetic)
-        // but that name is not useful for user
-        if (matcherClass.isSynthetic()) {
-            matcherName = "";
-        } else {
-            matcherName = matcherClass.getSimpleName();
-        }
-
-        return decamelizeMatcherName(matcherName);
+        
     }
 
-    private MatcherToString() {}
+    private MatcherToString() { }
 }

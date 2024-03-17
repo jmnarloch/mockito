@@ -22,38 +22,20 @@ public class AtMost implements VerificationMode {
     private final int maxNumberOfInvocations;
 
     public AtMost(int maxNumberOfInvocations) {
-        if (maxNumberOfInvocations < 0) {
-            throw new MockitoException("Negative value is not allowed here");
-        }
-        this.maxNumberOfInvocations = maxNumberOfInvocations;
+        
     }
 
     @Override
     public void verify(VerificationData data) {
-        List<Invocation> invocations = data.getAllInvocations();
-        MatchableInvocation wanted = data.getTarget();
-
-        List<Invocation> found = findInvocations(invocations, wanted);
-        int foundSize = found.size();
-        if (foundSize > maxNumberOfInvocations) {
-            throw wantedAtMostX(maxNumberOfInvocations, foundSize);
-        }
-
-        removeAlreadyVerified(found);
-        markVerified(found, wanted);
+        
     }
 
     private void removeAlreadyVerified(List<Invocation> invocations) {
-        for (Iterator<Invocation> iterator = invocations.iterator(); iterator.hasNext(); ) {
-            Invocation i = iterator.next();
-            if (i.isVerified()) {
-                iterator.remove();
-            }
-        }
+        
     }
 
     @Override
     public String toString() {
-        return "Wanted invocations count: at most " + maxNumberOfInvocations;
+        
     }
 }

@@ -35,18 +35,11 @@ public class ReturnsElementsOf implements Answer<Object> {
     private final LinkedList<Object> elements;
 
     public ReturnsElementsOf(Collection<?> elements) {
-        if (elements == null) {
-            throw new MockitoException(
-                    "ReturnsElementsOf does not accept null as constructor argument.\n"
-                            + "Please pass a collection instance");
-        }
-        this.elements = new LinkedList<>(elements);
+        
     }
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        if (elements.size() == 1) {
-            return elements.get(0);
-        } else return elements.poll();
+        
     }
 }

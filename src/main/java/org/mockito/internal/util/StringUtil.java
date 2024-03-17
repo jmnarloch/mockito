@@ -14,7 +14,7 @@ public class StringUtil {
 
     private static final Pattern CAPS = Pattern.compile("([A-Z\\d][^A-Z\\d]*)");
 
-    private StringUtil() {}
+    private StringUtil() { }
 
     /**
      * @param text
@@ -22,7 +22,7 @@ public class StringUtil {
      * @return less first line
      */
     public static String removeFirstLine(String text) {
-        return text.replaceFirst(".*?\n", "");
+        
     }
 
     /**
@@ -30,7 +30,7 @@ public class StringUtil {
      * This makes it something like 'format' no really 'join'.
      */
     public static String join(Object... linesToBreak) {
-        return join("\n", asList(linesToBreak));
+        
     }
 
     /**
@@ -40,7 +40,7 @@ public class StringUtil {
      * @param lines collection to join
      */
     public static String join(String start, Collection<?> lines) {
-        return join(start, "", lines);
+        
     }
 
     /**
@@ -51,41 +51,14 @@ public class StringUtil {
      * @param lines collection to join
      */
     public static String join(String start, String linePrefix, Collection<?> lines) {
-        if (lines.isEmpty()) {
-            return "";
-        }
-        StringBuilder out = new StringBuilder(start);
-        for (Object line : lines) {
-            out.append(linePrefix).append(line).append("\n");
-        }
-        return out.substring(0, out.length() - 1); // lose last EOL
+         // lose last EOL
     }
 
     public static String decamelizeMatcherName(String className) {
-        if (className.length() == 0) {
-            return "<custom argument matcher>";
-        }
-
-        String decamelized = decamelizeClassName(className);
-
-        if (decamelized.length() == 0) {
-            return "<" + className + ">";
-        }
-
-        return "<" + decamelized + ">";
+        
     }
 
     private static String decamelizeClassName(String className) {
-        Matcher match = CAPS.matcher(className);
-        StringBuilder deCameled = new StringBuilder();
-        while (match.find()) {
-            if (deCameled.length() == 0) {
-                deCameled.append(match.group());
-            } else {
-                deCameled.append(" ");
-                deCameled.append(match.group().toLowerCase());
-            }
-        }
-        return deCameled.toString();
+        
     }
 }

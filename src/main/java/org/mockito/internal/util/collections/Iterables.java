@@ -16,11 +16,7 @@ public final class Iterables {
      * Converts enumeration into iterable
      */
     public static <T> Iterable<T> toIterable(Enumeration<T> in) {
-        List<T> out = new ArrayList<T>();
-        while (in.hasMoreElements()) {
-            out.add(in.nextElement());
-        }
-        return out;
+        
     }
 
     /**
@@ -31,13 +27,8 @@ public final class Iterables {
      * @throws IllegalArgumentException when supplied iterable is empty
      */
     public static <T> T firstOf(Iterable<T> iterable) {
-        Iterator<T> iterator = iterable.iterator();
-        if (!iterator.hasNext()) {
-            throw new IllegalArgumentException(
-                    "Cannot provide 1st element from empty iterable: " + iterable);
-        }
-        return iterator.next();
+        
     }
 
-    private Iterables() {}
+    private Iterables() { }
 }

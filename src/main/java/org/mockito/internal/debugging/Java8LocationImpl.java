@@ -19,17 +19,17 @@ class Java8LocationImpl implements Location, Serializable {
     private String sourceFile;
 
     public Java8LocationImpl(Throwable stackTraceHolder, boolean isInline) {
-        this(stackTraceFilter, stackTraceHolder, isInline);
+        
     }
 
     private Java8LocationImpl(
             StackTraceFilter stackTraceFilter, Throwable stackTraceHolder, boolean isInline) {
-        computeStackTraceInformation(stackTraceFilter, stackTraceHolder, isInline);
+        
     }
 
     @Override
     public String toString() {
-        return stackTraceLine;
+        
     }
 
     /**
@@ -39,21 +39,11 @@ class Java8LocationImpl implements Location, Serializable {
      */
     private void computeStackTraceInformation(
             StackTraceFilter stackTraceFilter, Throwable stackTraceHolder, boolean isInline) {
-        StackTraceElement filtered = stackTraceFilter.filterFirst(stackTraceHolder, isInline);
-
-        // there are corner cases where exception can have a null or empty stack trace
-        // for example, a custom exception can override getStackTrace() method
-        if (filtered == null) {
-            this.stackTraceLine = "-> at <<unknown line>>";
-            this.sourceFile = "<unknown source file>";
-        } else {
-            this.stackTraceLine = "-> at " + filtered;
-            this.sourceFile = filtered.getFileName();
-        }
+        
     }
 
     @Override
     public String getSourceFile() {
-        return sourceFile;
+        
     }
 }

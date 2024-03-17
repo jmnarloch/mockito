@@ -21,7 +21,7 @@ public interface MemberAccessor {
     default Object newInstance(
             Constructor<?> constructor, OnConstruction onConstruction, Object... arguments)
             throws InstantiationException, InvocationTargetException, IllegalAccessException {
-        return onConstruction.invoke(() -> newInstance(constructor, arguments));
+        
     }
 
     Object invoke(Method method, Object target, Object... arguments)

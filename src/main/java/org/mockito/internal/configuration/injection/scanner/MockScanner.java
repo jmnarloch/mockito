@@ -28,8 +28,7 @@ public class MockScanner {
      * @param clazz    The class in the type hierarchy of this instance.
      */
     public MockScanner(Object instance, Class<?> clazz) {
-        this.instance = instance;
-        this.clazz = clazz;
+        
     }
 
     /**
@@ -42,7 +41,7 @@ public class MockScanner {
      * @param mocks Set of mocks
      */
     public void addPreparedMocks(Set<Object> mocks) {
-        mocks.addAll(scan());
+        
     }
 
     /**
@@ -51,35 +50,18 @@ public class MockScanner {
      * @return A prepared set of mock
      */
     private Set<Object> scan() {
-        Set<Object> mocks = newMockSafeHashSet();
-        for (Field field : clazz.getDeclaredFields()) {
-            // mock or spies only
-            FieldReader fieldReader = new FieldReader(instance, field);
-
-            Object mockInstance = preparedMock(fieldReader.read(), field);
-            if (mockInstance != null) {
-                mocks.add(mockInstance);
-            }
-        }
-        return mocks;
+        
     }
 
     private Object preparedMock(Object instance, Field field) {
-        if (isAnnotatedByMockOrSpy(field)) {
-            return instance;
-        }
-        if (isMockOrSpy(instance)) {
-            MockUtil.maybeRedefineMockName(instance, field.getName());
-            return instance;
-        }
-        return null;
+        
     }
 
     private boolean isAnnotatedByMockOrSpy(Field field) {
-        return field.isAnnotationPresent(Spy.class) || field.isAnnotationPresent(Mock.class);
+        
     }
 
     private boolean isMockOrSpy(Object instance) {
-        return MockUtil.isMock(instance) || MockUtil.isSpy(instance);
+        
     }
 }

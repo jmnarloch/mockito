@@ -32,69 +32,30 @@ class DefaultStubbingLookupListener implements StubbingLookupListener, Serializa
     private boolean mismatchesReported;
 
     DefaultStubbingLookupListener(Strictness strictness) {
-        this.currentStrictness = strictness;
+        
     }
 
     @Override
     public void onStubbingLookup(StubbingLookupEvent event) {
-        Strictness actualStrictness =
-                determineStrictness(
-                        event.getStubbingFound(), event.getMockSettings(), currentStrictness);
-
-        if (actualStrictness != Strictness.STRICT_STUBS) {
-            return;
-        }
-
-        if (event.getStubbingFound() == null) {
-            // If stubbing was not found for invocation it means that either the mock invocation was
-            // not stubbed or
-            // we have a stubbing arg mismatch.
-            List<Invocation> argMismatchStubbings =
-                    potentialArgMismatches(event.getInvocation(), event.getAllStubbings());
-            if (!argMismatchStubbings.isEmpty()) {
-                mismatchesReported = true;
-                Reporter.potentialStubbingProblem(event.getInvocation(), argMismatchStubbings);
-            }
-        } else {
-            // when strict stubs are in use, every time a stub is realized in the code it is
-            // implicitly marked as verified
-            // this way, the users don't have to repeat themselves to verify stubbed invocations
-            // (DRY)
-            event.getInvocation().markVerified();
-        }
+        
     }
 
     private static List<Invocation> potentialArgMismatches(
             Invocation invocation, Collection<Stubbing> stubbings) {
-        List<Invocation> matchingStubbings = new LinkedList<>();
-        for (Stubbing s : stubbings) {
-            if (UnusedStubbingReporting.shouldBeReported(s)
-                    && Objects.equals(
-                            s.getInvocation().getMethod().getName(),
-                            invocation.getMethod().getName())
-                    // If stubbing and invocation are in the same source file we assume they are in
-                    // the test code,
-                    // and we don't flag it as mismatch:
-                    && !Objects.equals(
-                            s.getInvocation().getLocation().getSourceFile(),
-                            invocation.getLocation().getSourceFile())) {
-                matchingStubbings.add(s.getInvocation());
-            }
-        }
-        return matchingStubbings;
+        
     }
 
     /**
      * Enables resetting the strictness to desired level
      */
     void setCurrentStrictness(Strictness currentStrictness) {
-        this.currentStrictness = currentStrictness;
+        
     }
 
     /**
      * Indicates that stubbing argument mismatch was reported
      */
     boolean isMismatchesReported() {
-        return mismatchesReported;
+        
     }
 }

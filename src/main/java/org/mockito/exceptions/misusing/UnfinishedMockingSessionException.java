@@ -20,6 +20,6 @@ import org.mockito.session.MockitoSessionBuilder;
  */
 public class UnfinishedMockingSessionException extends MockitoException {
     public UnfinishedMockingSessionException(String message) {
-        super(message);
+        
     }
 }

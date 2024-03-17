@@ -24,41 +24,30 @@ public final class MockedConstructionImpl<T> implements MockedConstruction<T> {
     private final Location location = LocationFactory.create();
 
     protected MockedConstructionImpl(MockMaker.ConstructionMockControl<T> control) {
-        this.control = control;
+        
     }
 
     @Override
     public List<T> constructed() {
-        return Collections.unmodifiableList(control.getMocks());
+        
     }
 
     @Override
     public boolean isClosed() {
-        return closed;
+        
     }
 
     @Override
     public void close() {
-        assertNotClosed();
-
-        closed = true;
-        control.disable();
+        
     }
 
     @Override
     public void closeOnDemand() {
-        if (!closed) {
-            close();
-        }
+        
     }
 
     private void assertNotClosed() {
-        if (closed) {
-            throw new MockitoException(
-                    join(
-                            "The static mock created at",
-                            location.toString(),
-                            "is already resolved and cannot longer be used"));
-        }
+        
     }
 }

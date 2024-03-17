@@ -26,10 +26,7 @@ public class UnusedStubbingsFinder {
      * Stubbings explicitily marked as LENIENT are not included.
      */
     public UnusedStubbings getUnusedStubbings(Iterable<Object> mocks) {
-        return new UnusedStubbings(
-                AllInvocationsFinder.findStubbings(mocks).stream()
-                        .filter(UnusedStubbingReporting::shouldBeReported)
-                        .collect(Collectors.toList()));
+        
     }
 
     /**
@@ -43,31 +40,6 @@ public class UnusedStubbingsFinder {
      * There are high level unit tests that demonstrate this scenario.
      */
     public Collection<Invocation> getUnusedStubbingsByLocation(Iterable<Object> mocks) {
-        Set<Stubbing> stubbings = AllInvocationsFinder.findStubbings(mocks);
-
-        // 1st pass, collect all the locations of the stubbings that were used
-        // note that those are _not_ locations where the stubbings was used
-        Set<String> locationsOfUsedStubbings = new HashSet<>();
-        for (Stubbing s : stubbings) {
-            if (!UnusedStubbingReporting.shouldBeReported(s)) {
-                String location = s.getInvocation().getLocation().toString();
-                locationsOfUsedStubbings.add(location);
-            }
-        }
-
-        // 2nd pass, collect unused stubbings by location
-        // If the location matches we assume the stubbing was used in at least one test method
-        // Also, using map to deduplicate reported unused stubbings
-        // if unused stubbing appear in the setup method / constructor we don't want to report it
-        // per each test case
-        Map<String, Invocation> out = new LinkedHashMap<>();
-        for (Stubbing s : stubbings) {
-            String location = s.getInvocation().getLocation().toString();
-            if (!locationsOfUsedStubbings.contains(location)) {
-                out.put(location, s.getInvocation());
-            }
-        }
-
-        return out.values();
+        
     }
 }

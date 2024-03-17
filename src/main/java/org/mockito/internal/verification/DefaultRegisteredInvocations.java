@@ -20,45 +20,28 @@ public class DefaultRegisteredInvocations implements RegisteredInvocations, Seri
 
     @Override
     public void add(Invocation invocation) {
-        synchronized (invocations) {
-            invocations.add(invocation);
-        }
+        
     }
 
     @Override
     public void removeLast() {
         // TODO: add specific test for synchronization of this block (it is tested by
         // InvocationContainerImplTest at the moment)
-        synchronized (invocations) {
-            if (!invocations.isEmpty()) {
-                invocations.removeLast();
-            }
-        }
+        
     }
 
     @Override
     public List<Invocation> getAll() {
-        List<Invocation> copiedList;
-        synchronized (invocations) {
-            copiedList = new LinkedList<>(invocations);
-        }
-
-        return copiedList.stream()
-                .filter(invocation -> !isToStringMethod(invocation.getMethod()))
-                .collect(Collectors.toList());
+        
     }
 
     @Override
     public void clear() {
-        synchronized (invocations) {
-            invocations.clear();
-        }
+        
     }
 
     @Override
     public boolean isEmpty() {
-        synchronized (invocations) {
-            return invocations.isEmpty();
-        }
+        
     }
 }

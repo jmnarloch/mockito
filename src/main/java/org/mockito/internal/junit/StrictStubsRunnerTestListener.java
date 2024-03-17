@@ -16,7 +16,7 @@ public class StrictStubsRunnerTestListener implements MockitoTestListener {
             new DefaultStubbingLookupListener(Strictness.STRICT_STUBS);
 
     @Override
-    public void testFinished(TestFinishedEvent event) {}
+    public void testFinished(TestFinishedEvent event) { }
 
     @Override
     public void onMockCreated(Object mock, MockCreationSettings settings) {
@@ -24,6 +24,6 @@ public class StrictStubsRunnerTestListener implements MockitoTestListener {
         // MockCreationSettings is intended to be an immutable view of the creation settings
         // However, we our previous listeners work this way and it hasn't backfired.
         // Since it is simple and pragmatic, we'll keep it for now.
-        settings.getStubbingLookupListeners().add(stubbingLookupListener);
+        
     }
 }

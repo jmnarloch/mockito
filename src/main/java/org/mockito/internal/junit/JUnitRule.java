@@ -17,24 +17,22 @@ public final class JUnitRule implements MockitoRule {
 
     /** @param strictness how strict mocking / stubbing is concerned */
     public JUnitRule(MockitoLogger logger, Strictness strictness) {
-        this.sessionStore = new JUnitSessionStore(logger, strictness);
+        
     }
 
     @Override
     public Statement apply(
             final Statement base, final FrameworkMethod method, final Object target) {
-        return sessionStore.createStatement(
-                base, target.getClass().getSimpleName() + "." + method.getName(), target);
+        
     }
 
     @Override
     public MockitoRule silent() {
-        return strictness(Strictness.LENIENT);
+        
     }
 
     @Override
     public MockitoRule strictness(Strictness strictness) {
-        sessionStore.setStrictness(strictness);
-        return this;
+        
     }
 }

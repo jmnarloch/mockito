@@ -66,8 +66,7 @@ public class ArgumentCaptor<T> {
     private final Class<? extends T> clazz;
 
     private ArgumentCaptor(Class<? extends T> clazz) {
-        this.clazz = clazz;
-        this.capturingMatcher = new CapturingMatcher<>(clazz);
+        
     }
 
     /**
@@ -81,8 +80,7 @@ public class ArgumentCaptor<T> {
      * @return null or default values
      */
     public T capture() {
-        T ignored = Mockito.argThat(capturingMatcher);
-        return defaultValue(clazz);
+        
     }
 
     /**
@@ -95,7 +93,7 @@ public class ArgumentCaptor<T> {
      * @return captured argument value
      */
     public T getValue() {
-        return this.capturingMatcher.getLastValue();
+        
     }
 
     /**
@@ -131,7 +129,7 @@ public class ArgumentCaptor<T> {
      * @return captured argument value
      */
     public List<T> getAllValues() {
-        return this.capturingMatcher.getAllValues();
+        
     }
 
     /**
@@ -145,7 +143,7 @@ public class ArgumentCaptor<T> {
      * @return A new ArgumentCaptor
      */
     public static <U, S extends U> ArgumentCaptor<U> forClass(Class<S> clazz) {
-        return new ArgumentCaptor<>(clazz);
+        
     }
 
     /**
@@ -195,11 +193,7 @@ public class ArgumentCaptor<T> {
     @SafeVarargs
     @SuppressWarnings({"varargs", "unchecked"})
     public static <U> ArgumentCaptor<U> captor(U... reified) {
-        if (reified == null || reified.length > 0) {
-            throw new IllegalArgumentException("Do not provide any arguments to the 'captor' call");
-        }
-
-        return forClass((Class<U>) reified.getClass().getComponentType());
+        
     }
 
     /**
@@ -208,6 +202,6 @@ public class ArgumentCaptor<T> {
      * @return the raw class that is being captured by this captor.
      */
     Class<? extends T> getCaptorType() {
-        return clazz;
+        
     }
 }

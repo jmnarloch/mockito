@@ -22,23 +22,9 @@ public class Only implements VerificationMode {
     @Override
     @SuppressWarnings("unchecked")
     public void verify(VerificationData data) {
-        MatchableInvocation target = data.getTarget();
-        List<Invocation> invocations = data.getAllInvocations();
-        List<Invocation> chunk = findInvocations(invocations, target);
-        if (!chunk.isEmpty()) {
-            markVerified(chunk.get(0), target);
-        }
-        if (invocations.size() != 1 && !chunk.isEmpty()) {
-            Invocation unverified = findFirstUnverified(invocations);
-            throw noMoreInteractionsWanted(unverified, (List) invocations);
-        }
-        if (invocations.size() != 1 || chunk.isEmpty()) {
-            throw wantedButNotInvoked(target);
-        }
+        
     }
 
     @Override
-    public String toString() {
-        return "Wanted invocations count: 1 and no other method invoked";
-    }
+    public String toString() { }
 }

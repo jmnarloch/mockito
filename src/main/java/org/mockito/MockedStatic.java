@@ -34,7 +34,7 @@ public interface MockedStatic<T> extends ScopedMock {
      * See {@link Mockito#verify(Object)}.
      */
     default void verify(Verification verification) {
-        verify(verification, times(1));
+        
     }
 
     /**

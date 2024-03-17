@@ -27,27 +27,11 @@ import org.mockito.invocation.MatchableInvocation;
 
 public class NumberOfInvocationsChecker {
 
-    private NumberOfInvocationsChecker() {}
+    private NumberOfInvocationsChecker() { }
 
     public static void checkNumberOfInvocations(
             List<Invocation> invocations, MatchableInvocation wanted, int wantedCount) {
-        List<Invocation> actualInvocations = findInvocations(invocations, wanted);
-
-        int actualCount = actualInvocations.size();
-        if (wantedCount > actualCount) {
-            List<Location> allLocations = getAllLocations(actualInvocations);
-            throw tooFewActualInvocations(
-                    new Discrepancy(wantedCount, actualCount), wanted, allLocations);
-        }
-        if (wantedCount == 0 && actualCount > 0) {
-            throw neverWantedButInvoked(wanted, actualInvocations);
-        }
-        if (wantedCount < actualCount) {
-            throw tooManyActualInvocations(
-                    wantedCount, actualCount, wanted, getAllLocations(actualInvocations));
-        }
-
-        markVerified(actualInvocations, wanted);
+        
     }
 
     public static void checkNumberOfInvocations(
@@ -55,21 +39,7 @@ public class NumberOfInvocationsChecker {
             MatchableInvocation wanted,
             int wantedCount,
             InOrderContext context) {
-        List<Invocation> chunk = findMatchingChunk(invocations, wanted, wantedCount, context);
-
-        int actualCount = chunk.size();
-
-        if (wantedCount > actualCount) {
-            List<Location> allLocations = getAllLocations(chunk);
-            throw tooFewActualInvocationsInOrder(
-                    new Discrepancy(wantedCount, actualCount), wanted, allLocations);
-        }
-        if (wantedCount < actualCount) {
-            throw tooManyActualInvocationsInOrder(
-                    wantedCount, actualCount, wanted, getAllLocations(chunk));
-        }
-
-        markVerifiedInOrder(chunk, wanted, context);
+        
     }
 
     public static void checkNumberOfInvocationsNonGreedy(
@@ -77,20 +47,6 @@ public class NumberOfInvocationsChecker {
             MatchableInvocation wanted,
             int wantedCount,
             InOrderContext context) {
-        int actualCount = 0;
-        Location lastLocation = null;
-        while (actualCount < wantedCount) {
-            Invocation next = findFirstMatchingUnverifiedInvocation(invocations, wanted, context);
-            if (next == null) {
-                throw tooFewActualInvocationsInOrder(
-                        new Discrepancy(wantedCount, actualCount),
-                        wanted,
-                        Arrays.asList(lastLocation));
-            }
-            markVerified(next, wanted);
-            context.markVerified(next);
-            lastLocation = next.getLocation();
-            actualCount++;
-        }
+        
     }
 }
