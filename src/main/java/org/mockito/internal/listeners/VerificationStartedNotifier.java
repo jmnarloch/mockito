@@ -19,7 +19,14 @@ public final class VerificationStartedNotifier {
 
     public static Object notifyVerificationStarted(
             List<VerificationStartedListener> listeners, MockingDetails originalMockingDetails) {
-        
+        if (listeners.isEmpty()) {
+            return originalMockingDetails.getMock();
+        }
+        VerificationStartedEvent event = new Event(originalMockingDetails);
+        for (VerificationStartedListener listener : listeners) {
+            listener.onVerificationStarted(event);
+        }
+        return event.getMock();
     }
 
     static class Event implements VerificationStartedEvent {
@@ -27,23 +34,30 @@ public final class VerificationStartedNotifier {
         private Object mock;
 
         public Event(MockingDetails originalMockingDetails) {
-            
+            this.originalMockingDetails = originalMockingDetails;
+            this.mock = originalMockingDetails.getMock();
         }
 
         @Override
         public void setMock(Object mock) {
-            
+            assertCompatibleTypes(mock, originalMockingDetails.getMockCreationSettings());
+            this.mock = mock;
         }
 
         @Override
         public Object getMock() {
-            
+            return mock;
         }
     }
 
     static void assertCompatibleTypes(Object mock, MockCreationSettings originalSettings) {
-        
+        Class originalType = originalSettings.getTypeToMock();
+        if (!originalType.isInstance(mock)) {
+            throw Reporter.methodDoesNotAcceptParameter(
+            "VerificationStartedEvent callback",
+            originalType.getSimpleName() + " instance instead of " + mock);
+        }
     }
 
-    private VerificationStartedNotifier() { }
+    private VerificationStartedNotifier() {}
 }

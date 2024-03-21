@@ -20,19 +20,44 @@ class StubbingArgMismatches {
     final Map<Invocation, Set<Invocation>> mismatches = new LinkedHashMap<>();
 
     public void add(Invocation invocation, Invocation stubbing) {
-        
+        Set<Invocation> matchingInvocations =
+        this.mismatches.computeIfAbsent(invocation, it -> new LinkedHashSet<>());
+        matchingInvocations.add(stubbing);
     }
 
     public void format(String testName, MockitoLogger logger) {
-        
+        if (mismatches.isEmpty()) {
+            return;
+        }
+
+        StubbingHint hint = new StubbingHint(testName);
+        int x = 1;
+        for (Map.Entry<Invocation, Set<Invocation>> mismatch : mismatches.entrySet()) {
+            hint.appendLine(x++, ". ")
+            .append(mismatch.getKey().getLocation())
+            .append(" stubbed ")
+            .append(mismatch.getKey().getStackTrace())
+            .appendLine();
+            for (Invocation m : mismatch.getValue()) {
+                hint.appendLine("   ")
+                .append(m)
+                .append(" ")
+                .append(m.getLocation())
+                .append(" ")
+                .append(m.getStackTrace())
+                .appendLine();
+            }
+        }
+
+        logger.log(hint.toString());
     }
 
     public int size() {
-        
+        return mismatches.size();
     }
 
     @Override
     public String toString() {
-        
+        return "" + mismatches;
     }
 }

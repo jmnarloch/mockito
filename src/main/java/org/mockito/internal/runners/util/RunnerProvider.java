@@ -13,6 +13,12 @@ public class RunnerProvider {
 
     public InternalRunner newInstance(String runnerClassName, Object... constructorArgs)
             throws Exception {
-        
+        Constructor<?> constructor = ClassPathLoader.loadImpl(runnerClassName).getDeclaredConstructors()[0];
+        try {
+            return (InternalRunner) constructor.newInstance(constructorArgs);
+        } catch (InvocationTargetException e) {
+            // method propagates meaningful exceptions
+            throw e;
+        }
     }
 }

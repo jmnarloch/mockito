@@ -17,7 +17,8 @@ public class GenericMaster {
      * @param field the field to inspect
      */
     public Class<?> getGenericType(Field field) {
-        
+        Type generic = field.getGenericType();
+        return getaClass(generic);
     }
 
     /**
@@ -26,10 +27,19 @@ public class GenericMaster {
      * @param parameter the parameter to inspect
      */
     public Class<?> getGenericType(Parameter parameter) {
-        
+        return getaClass(parameter.getParameterizedType());
     }
 
     private Class<?> getaClass(Type generic) {
-        
+        if (generic instanceof ParameterizedType) {
+            Type actual = ((ParameterizedType) generic).getActualTypeArguments()[0];
+            if (actual instanceof Class) {
+                return (Class<?>) actual;
+            } else {
+                // Currently we don't support nested generics (recursive search).
+                return Void.class;
+            }
+        }
+        return Void.class;
     }
 }

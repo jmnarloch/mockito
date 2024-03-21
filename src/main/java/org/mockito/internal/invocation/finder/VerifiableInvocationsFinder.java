@@ -14,9 +14,11 @@ import org.mockito.invocation.Invocation;
  */
 public class VerifiableInvocationsFinder {
 
-    private VerifiableInvocationsFinder() { }
+    private VerifiableInvocationsFinder() {}
 
     public static List<Invocation> find(List<?> mocks) {
-        
+        return AllInvocationsFinder.find(mocks).stream()
+        .filter(invocation -> !invocation.isIgnoredForVerification())
+        .collect(Collectors.toList());
     }
 }

@@ -14,20 +14,20 @@ public class Matches implements ArgumentMatcher<Object>, Serializable {
     private final Pattern pattern;
 
     public Matches(String regex) {
-        
+        this(Pattern.compile(regex));
     }
 
     public Matches(Pattern pattern) {
-        
+        this.pattern = pattern;
     }
 
     @Override
     public boolean matches(Object actual) {
-        
+        return (actual instanceof String) && pattern.matcher((String) actual).find();
     }
 
     @Override
     public String toString() {
-        
+        return "matches(\"" + pattern.pattern().replace("\\\\", "\\") + "\")";
     }
 }

@@ -25,7 +25,8 @@ public class Description implements VerificationMode {
      * @param description The failure message to prepend if verification fails
      */
     public Description(VerificationMode verification, String description) {
-        
+        this.verification = verification;
+        this.description = description;
     }
 
     /**
@@ -35,6 +36,11 @@ public class Description implements VerificationMode {
      */
     @Override
     public void verify(VerificationData data) {
-        
+        try {
+            verification.verify(data);
+
+        } catch (AssertionError e) {
+            throw new MockitoAssertionError(e, description);
+        }
     }
 }

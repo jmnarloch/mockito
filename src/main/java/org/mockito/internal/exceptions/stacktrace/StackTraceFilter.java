@@ -45,9 +45,13 @@ public class StackTraceFilter implements Serializable {
      * <strike>If any good are in the middle of bad those are also removed.</strike>
      */
     public StackTraceElement[] filter(StackTraceElement[] target, boolean keepTop) {
-        // TODO: profile
-        // TODO: investigate "keepTop" commit history - no effect!
-        
+        List<StackTraceElement> filtered = new ArrayList<>();
+        for (StackTraceElement element : target) {
+            if (filter(element, filtered, keepTop)) {
+                filtered.add(element);
+            }
+        }
+        return filtered.toArray(new StackTraceElement[0]);
     }
 
     /**
@@ -66,7 +70,8 @@ public class StackTraceFilter implements Serializable {
      * @return The first {@link StackTraceElement} outside of the {@link StackTraceFilter#CLEANER}
      */
     public StackTraceElement filterFirst(Throwable target, boolean isInline) {
-        
+        StackTraceElement[] filtered = filter(target.getStackTrace(), isInline);
+        return filtered.length == 0 ? null : filtered[0];
     }
 
     /**
@@ -74,6 +79,15 @@ public class StackTraceFilter implements Serializable {
      * Returns the default value if source file cannot be found.
      */
     public String findSourceFile(StackTraceElement[] target, String defaultValue) {
-        
+        for (StackTraceElement e : target) {
+            if (e.isNativeMethod()) {
+                continue;
+            }
+            String fileName = e.getFileName();
+            if (fileName != null) {
+                return fileName;
+            }
+        }
+        return defaultValue;
     }
 }

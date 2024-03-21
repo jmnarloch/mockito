@@ -36,21 +36,39 @@ public class InOrderImpl implements InOrder, InOrderContext {
     private final InOrderContext inOrderContext = new InOrderContextImpl();
 
     public List<Object> getMocksToBeVerifiedInOrder() {
-        
+        return mocksToBeVerifiedInOrder;
     }
 
     public InOrderImpl(List<?> mocksToBeVerifiedInOrder) {
-        
+        this.mocksToBeVerifiedInOrder.addAll(mocksToBeVerifiedInOrder);
     }
 
     @Override
     public <T> T verify(T mock) {
-        
+        return this.verify(mock, VerificationModeFactory.times(1));
     }
 
     @Override
     public <T> T verify(T mock, VerificationMode mode) {
-        
+        if (mock == null) {
+            throw nullPassedToVerify();
+        }
+        MockingDetails mockingDetails = mockingDetails(mock);
+        if (!mockingDetails.isMock()) {
+            throw notAMockPassedToVerify(mock.getClass());
+        }
+        if (!this.objectIsMockToBeVerified(mock)) {
+            throw notAMockPassedToInOrderWrapper();
+        }
+        if (mode instanceof VerificationWrapper) {
+            return mockitoCore.verify(
+            mock,
+            new VerificationWrapperInOrderWrapper((VerificationWrapper<?>) mode, this));
+        } else if (!(mode instanceof VerificationInOrderMode)) {
+            throw new MockitoException(
+            mode.getClass().getSimpleName() + " is not implemented to work with InOrder");
+        }
+        return mockitoCore.verify(mock, new InOrderWrapper((VerificationInOrderMode) mode, this));
     }
 
     @Override
@@ -58,7 +76,17 @@ public class InOrderImpl implements InOrder, InOrderContext {
             MockedStatic<?> mockedStatic,
             MockedStatic.Verification verification,
             VerificationMode mode) {
-        
+        if (mode instanceof VerificationWrapper) {
+            mockedStatic.verify(
+            verification,
+            new VerificationWrapperInOrderWrapper((VerificationWrapper<?>) mode, this));
+        } else if (mode instanceof VerificationInOrderMode) {
+            mockedStatic.verify(
+            verification, new InOrderWrapper((VerificationInOrderMode) mode, this));
+        } else {
+            throw new MockitoException(
+            "Only VerificationInOrder is allowed in combination with inOrder().");
+        }
     }
 
     // We can't use `this.mocksToBeVerifiedInOrder.contains`, since that in turn calls `.equals` on
@@ -67,21 +95,26 @@ public class InOrderImpl implements InOrder, InOrderContext {
     // wouldn't be a problem, unless the user explicitly verifies that no interactions are performed
     // on the mock, which would start to fail for the equals invocation.
     private boolean objectIsMockToBeVerified(Object mock) {
-        
+        for (Object inOrderMock : this.mocksToBeVerifiedInOrder) {
+            if (inOrderMock == mock) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean isVerified(Invocation i) {
-        
+        return inOrderContext.isVerified(i);
     }
 
     @Override
     public void markVerified(Invocation i) {
-        
+        inOrderContext.markVerified(i);
     }
 
     @Override
     public void verifyNoMoreInteractions() {
-        
+        mockitoCore.verifyNoMoreInteractionsInOrder(mocksToBeVerifiedInOrder, this);
     }
 }

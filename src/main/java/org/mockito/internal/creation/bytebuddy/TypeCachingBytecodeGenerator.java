@@ -47,13 +47,45 @@ class TypeCachingBytecodeGenerator extends ReferenceQueue<ClassLoader>
     private final TypeCachingLock[] cacheLocks;
 
     public TypeCachingBytecodeGenerator(BytecodeGenerator bytecodeGenerator, boolean weak) {
-        
+        this.bytecodeGenerator = bytecodeGenerator;
+        typeCache =
+        weak
+        ? new TypeCache.WeakCache<>()
+        : new TypeCache.WithInlineExpunction<>();
+        this.cacheLocks = new TypeCachingLock[CACHE_LOCK_SIZE];
+        for (int i = 0; i < CACHE_LOCK_SIZE; i++) {
+            cacheLocks[i] = new TypeCachingLock();
+        }
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> Class<T> mockClass(final MockFeatures<T> params) {
-        
+        lock.readLock().lock();
+        try {
+            Class<T> mockedType = params.mockedType;
+            ClassLoader classLoader = params.mockedType.getClassLoader();
+            Set<Class<?>> ancillaryTypes = params.mockedTypeAncillaryTypes;
+            MockitoMockKey key =
+            new MockitoMockKey(
+            mockedType,
+            params.interfaces,
+            params.serializableMode,
+            params.stripAnnotations,
+            params.spied,
+            params.metaData,
+            params.matchersGeneric,
+            params.constructorArgs);
+            return typeCache.findOrInsert(
+            classLoader,
+            key,
+            () -> bytecodeGenerator.mockClass(params),
+            ancillaryTypes);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create byte code", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -63,22 +95,31 @@ class TypeCachingBytecodeGenerator extends ReferenceQueue<ClassLoader>
      * @return the {@link TypeCachingLock} to use to lock the {@link TypeCache}
      */
     private TypeCachingLock getCacheLockForKey(MockitoMockKey key) {
-        
+        int hashCode = key.hashCode();
+        // Try to create a good spread to avoid collisions.
+        hashCode = (hashCode >>> 16) ^ hashCode;
+        return cacheLocks[hashCode & CACHE_LOCK_MASK];
     }
 
     @Override
     public void mockClassStatic(Class<?> type) {
-        
+        bytecodeGenerator.mockClassStatic(type);
     }
 
     @Override
     public void mockClassConstruction(Class<?> type) {
-        
+        bytecodeGenerator.mockClassConstruction(type);
     }
 
     @Override
     public void clearAllCaches() {
-        
+        lock.writeLock().lock();
+        try {
+            typeCache.clear();
+            bytecodeGenerator.clearAllCaches();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private static final class TypeCachingLock {}
@@ -93,17 +134,31 @@ class TypeCachingBytecodeGenerator extends ReferenceQueue<ClassLoader>
                 Set<Class<?>> additionalType,
                 SerializableMode serializableMode,
                 boolean stripAnnotations) {
-            
+            super(type, additionalType);
+            this.serializableMode = serializableMode;
+            this.stripAnnotations = stripAnnotations;
         }
 
         @Override
         public boolean equals(Object object) {
-            
+            if (this == object) {
+                return true;
+            } else if (!(object instanceof MockitoMockKey)
+            || !mockedType.equals(((MockitoMockKey) object).mockedType)
+            || !interfaces.equals(((MockitoMockKey) object).interfaces)
+            || serializableMode != ((MockitoMockKey) object).serializableMode) {
+                return false;
+            }
+            return true;
         }
 
         @Override
         public int hashCode() {
-            
+            int result = 1;
+            result = 31 * result + (serializableMode == null ? 0 : serializableMode.hashCode());
+            result = 31 * result + (stripAnnotations ? 1 : 0);
+            result = 31 * result + (result.getClass().getName().hashCode());
+            return result;
         }
     }
 }

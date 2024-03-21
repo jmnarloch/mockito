@@ -107,46 +107,109 @@ class InstrumentationMemberAccessor implements MemberAccessor {
     @SuppressWarnings(value = "unused")
     private final MethodHandle privateLookupIn;
 
-    InstrumentationMemberAccessor() {
-        
-    }
+    InstrumentationMemberAccessor() {}
 
     @Override
     public Object newInstance(Constructor<?> constructor, Object... arguments)
             throws InstantiationException, InvocationTargetException {
-        
+        assureArguments(constructor, constructor.getDeclaringClass(), "constructor", arguments);
+        return newInstance(
+        constructor,
+        (ignoredType, ignoredValue, unusedType, unusedValue) -> null,
+        arguments);
     }
 
     @Override
     public Object newInstance(
             Constructor<?> constructor, OnConstruction onConstruction, Object... arguments)
             throws InstantiationException, InvocationTargetException {
-        
+        Class<?> declaringClass = constructor.getDeclaringClass();
+        if (declaringClass == MethodHandles.Lookup.class) {
+            Object self = arguments[0];
+            if (self instanceof Proxy) {
+                InvocationHandler invocationHandler = Proxy.getInvocationHandler(self);
+                if (invocationHandler instanceof HandleInvocation) {
+                    return ((OnHandleInvocation) invocationHandler).onHandle(arguments);
+                }
+            }
+        }
+        throw new IllegalStateException(
+        "Cannot handle construction: "
+        + constructor
+        + " with arguments "
+        + Arrays.toString(arguments)));
     }
 
     @Override
     public Object invoke(Method method, Object target, Object... arguments)
             throws InvocationTargetException {
-        
+        Class<?> owner = method.getDeclaringClass();
+        if (method.isDefault()) {
+            method = DISPATCHER.asMethod(owner, method);
+        }
+        assureArguments(method, target, owner, arguments, method.getParameterTypes());
+        try {
+            if (Modifier.isStatic(method.getModifiers())) {
+                return DISPATCHER
+                .unreflect(method)
+                .bindTo(null)
+                .invokeWithArguments(arguments);
+            } else {
+                return DISPATCHER.unreflect(method).bindTo(target).invokeWithArguments(arguments);
+            }
+        } catch (InvocationTargetException exception) {
+            throw exception;
+        } catch (Throwable exception) {
+            throw new IllegalStateException("Could not execute " + method + " on " + target, exception);
+        }
     }
 
     @Override
     public Object get(Field field, Object target) {
-        
+        Object module;
+        try {
+            module = field.getDeclaringClass().getModule();
+            assureOpen(module, field.getDeclaringClass().getPackageName());
+            module = field.getModule();
+            assureOpen(module, field.getType().getPackageName());
+        } catch (Throwable ignored) {
+            return Dispatcher.Gadget.MEMBER_ACCESS.get(field).get(target);
+        }
+        try {
+            return DISPATCHER.getter(field).bindTo(target).invokeWithArguments();
+        } catch (IllegalAccessException exception) {
+            throw new IllegalStateException(
+            "Could not access " + field + " on " + target + " with " + DISPATCHER, exception);
+        } catch (Throwable ignored) {
+            throw new IllegalStateException(
+            "Could not read " + field + " on " + target + " with " + DISPATCHER, ignored);
+        }
     }
 
     @Override
     public void set(Field field, Object target, Object value) throws IllegalAccessException {
-        
+        assureArguments(
+        field,
+        Modifier.isStatic(field.getModifiers()) ? null : target,
+        field.getDeclaringClass(),
+        new Object[] {value},
+        new Class<?>[] {field.getType()});
+        try {
+            DISPATCHER.bind(field).invokeExact(field, target, value);
+        } catch (Throwable throwable) {
+            throw new IllegalStateException("Could not read " + field + " on " + target, throwable);
+        }
     }
 
     private void assureOpen(Object module, String packageName) throws Throwable {
-        // It would be more reliable to check if a module's package already is opened to
-        // the dispatcher module from before. Unfortunately, there is no reliable check
-        // for doing so since the isOpen(String, Module) method always returns true
-        // if the second argument is an unnamed module. Therefore, for now, we need
-        // to reopen packages even if they are already opened to the dispatcher module.
-        
+        if (!(Boolean) DISPATCHER.invoke(isOpen, module, packageName)) {
+            throw new IllegalAccessException(
+            "package "
+            + packageName
+            + " is not open to the instrumentor to "
+            + DISPATCHER.invoke(getModule, this)
+            + " (with --add-opens)");
+        }
     }
 
     private static void assureArguments(
@@ -155,7 +218,23 @@ class InstrumentationMemberAccessor implements MemberAccessor {
             Class<?> type,
             Object[] values,
             Class<?>[] types) {
-        
+        if (!target.isAccessible()) {
+            throw new IllegalStateException("Should be accessible: " + target);
+        }
+        if (owner != null && !type.isAssignableFrom(owner.getClass())) {
+            throw new IllegalStateException("Owner is not assignable: " + owner);
+        }
+        for (int index = 0; index < values.length; index++) {
+            if (values[index] != null ^ types[index].isPrimitive()) {
+                throw new IllegalStateException(
+                "Primitive value compatibility: "
+                + values[index]
+                + " / "
+                + types[index]
+                + " on index "
+                + index);
+            }
+        }
     }
 
     public interface Dispatcher {

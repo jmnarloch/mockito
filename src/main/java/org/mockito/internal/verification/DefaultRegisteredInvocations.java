@@ -20,28 +20,28 @@ public class DefaultRegisteredInvocations implements RegisteredInvocations, Seri
 
     @Override
     public void add(Invocation invocation) {
-        
+        invocations.add(invocation);
     }
 
     @Override
     public void removeLast() {
-        // TODO: add specific test for synchronization of this block (it is tested by
-        // InvocationContainerImplTest at the moment)
-        
+        if (!invocations.isEmpty()) {
+            invocations.removeLast();
+        }
     }
 
     @Override
     public List<Invocation> getAll() {
-        
+        return invocations;
     }
 
     @Override
     public void clear() {
-        
+        invocations.clear();
     }
 
     @Override
     public boolean isEmpty() {
-        
+        return invocations.isEmpty();
     }
 }

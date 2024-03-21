@@ -164,6 +164,6 @@ public interface ArgumentMatcher<T> {
      * @since 4.11.0
      */
     default Class<?> type() {
-        
-    }
+    return Void.class;
+}
 }

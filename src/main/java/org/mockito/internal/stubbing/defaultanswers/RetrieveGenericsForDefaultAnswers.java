@@ -17,7 +17,26 @@ final class RetrieveGenericsForDefaultAnswers {
 
     static Object returnTypeForMockWithCorrectGenerics(
             InvocationOnMock invocation, AnswerCallback answerCallback) {
-        
+        MockCreationSettings mockSettings =
+        MockUtil.getMockHandler(invocation.getMock()).getMockSettings();
+        Class<?> returnType = invocation.getMethod().getReturnType();
+        Type resolvedType = GenericMetadataSupport.inferFrom(mockSettings.getTypeToMock())
+        .resolveGenericReturnType(invocation.getMethod())
+        .orReturnType();
+        if (resolvedType instanceof TypeVariable) {
+            Class<?> type = findTypeFromGeneric(invocation, (TypeVariable) resolvedType);
+            if (type != null) {
+                returnType = type;
+            } else {
+                returnType = RetrieveGenericsForDefaultAnswers.delegateChains(returnType);
+            }
+        }
+        if (resolvedType instanceof GenericArrayType) {
+            // Currently we don't handle generic arrays, so we always delegate chains
+            returnType = RetrieveGenericsForDefaultAnswers.delegateChains(returnType);
+        }
+
+        return answerCallback.apply(returnType);
     }
 
     /**
@@ -29,7 +48,25 @@ final class RetrieveGenericsForDefaultAnswers {
      * @return a non-null instance if the type has been resolve. Null otherwise.
      */
     private static Object delegateChains(final Class<?> type) {
-        
+        final ReturnsEmptyValues returnsEmptyValues = new ReturnsEmptyValues();
+        Object result = returnsEmptyValues.returnValueFor(type);
+
+        if (result == null) {
+            Class<?> emptyValueForClass = type;
+            while (emptyValueForClass != null && result == null) {
+                final Class<?>[] classes = emptyValueForClass.getClasses();
+                for (Class<?> clazz : classes) {
+                    result = returnsEmptyValues.returnValueFor(clazz);
+                }
+                emptyValueForClass = emptyValueForClass.getEnclosingClass();
+            }
+        }
+
+        if (result == null) {
+            result = new ReturnsMoreEmptyValues().returnValueFor(type);
+        }
+
+        return result;
     }
 
     /**
@@ -41,8 +78,25 @@ final class RetrieveGenericsForDefaultAnswers {
      */
     private static Class<?> findTypeFromGeneric(
             final InvocationOnMock invocation, final TypeVariable returnType) {
-        // Class level
-        
+        for (int i = 0; i < invocation.getMock().getCreationSettings().getInterfaces().length; i++) {
+            Class<?> ifc = invocation.getMock().getCreationSettings().getInterfaces()[i];
+            if (ifc.getTypeParameters().length > 0) {
+                // this ifc has some generic information
+                GenericMetadataSupport generics = GenericMetadataSupport.inferFor(ifc);
+                TypeVariable[] ifcTypeVariables = ifc.getTypeParameters();
+
+                for (int j = 0; j < ifcTypeVariables.length; j++) {
+                    TypeVariable ifcTypeVariable = ifcTypeVariables[j];
+                    if (ifcTypeVariable.getName().equals(returnType.getTypeName())) {
+                        // found the matching type variable, return the type that is in the same
+                        // position
+                        // for the mock's creation settings
+                        return generics.rawTypeAt(j);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -54,12 +108,24 @@ final class RetrieveGenericsForDefaultAnswers {
      */
     private static Class<?> findTypeFromGenericInArguments(
             final InvocationOnMock invocation, final TypeVariable returnType) {
-        
+        final Type[] parameterTypes = invocation.getMethod().getGenericParameterTypes();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Type argType = parameterTypes[i];
+            if (argType instanceof GenericArrayType) {
+                argType = ((GenericArrayType) argType).getGenericComponentType();
+            }
+            // Currently we can't go deep into the argument type to look for a match
+            if (argType instanceof TypeVariable
+            && argType.equals(returnType)) { // raw type on the spot
+                return invocation.getArgument(i).getClass();
+            }
+        }
+        return null;
     }
 
     interface AnswerCallback {
         Object apply(Class<?> type);
     }
 
-    private RetrieveGenericsForDefaultAnswers() { }
+    private RetrieveGenericsForDefaultAnswers() {}
 }

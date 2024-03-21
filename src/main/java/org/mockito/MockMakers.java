@@ -38,5 +38,5 @@ public final class MockMakers {
      */
     public static final String SUBCLASS = "mock-maker-subclass";
 
-    private MockMakers() { }
+    private MockMakers() {}
 }

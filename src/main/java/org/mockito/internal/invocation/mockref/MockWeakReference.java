@@ -16,15 +16,15 @@ public class MockWeakReference<T> implements MockReference<T> {
     private final WeakReference<T> ref;
 
     public MockWeakReference(T t) {
-        
+        super();
     }
 
     private Object writeReplace() throws ObjectStreamException {
-        
+        return new MockStrongReference<T>(get(), true);
     }
 
     @Override
     public T get() {
-        
+        return (ref == null) ? null : ref.get();
     }
 }

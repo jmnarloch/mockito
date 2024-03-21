@@ -17,7 +17,7 @@ import org.mockito.stubbing.Stubbing;
 
 public class AllInvocationsFinder {
 
-    private AllInvocationsFinder() { }
+    private AllInvocationsFinder() {}
 
     /**
      * gets all invocations from mocks. Invocations are ordered earlier first.
@@ -26,7 +26,13 @@ public class AllInvocationsFinder {
      * @return invocations
      */
     public static List<Invocation> find(Iterable<?> mocks) {
-        
+        Set<Invocation> invocationsInOrder = new TreeSet<>(new InvocationComparator());
+        for (Object mock : mocks) {
+            invocationsInOrder.addAll(
+            MockUtil.getInvocationContainer(mock).getInvocationsInOrder());
+        }
+
+        return new LinkedList<>(invocationsInOrder);
     }
 
     /**
@@ -36,6 +42,10 @@ public class AllInvocationsFinder {
      * @return stubbings
      */
     public static Set<Stubbing> findStubbings(Iterable<?> mocks) {
-        
+        Set<Stubbing> stubbings = new TreeSet<>(new StubbingComparator());
+        for (Invocation i : find(mocks)) {
+            stubbings.add(i.getStubbing());
+        }
+        return stubbings;
     }
 }

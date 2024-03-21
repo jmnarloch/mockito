@@ -43,6 +43,6 @@ public interface VerificationMode {
      * @since 2.1.0
      */
     default VerificationMode description(String description) {
-        
-    }
+    return VerificationModeFactory.description(this, description);
+}
 }

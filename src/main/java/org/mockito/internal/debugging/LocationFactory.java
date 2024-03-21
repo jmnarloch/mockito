@@ -9,14 +9,14 @@ import org.mockito.invocation.Location;
 public final class LocationFactory {
     private static final Factory factory = createLocationFactory();
 
-    private LocationFactory() { }
+    private LocationFactory() {}
 
     public static Location create() {
-        
+        return create(true);
     }
 
     public static Location create(boolean inline) {
-        
+        return factory.create(inline);
     }
 
     private interface Factory {
@@ -24,20 +24,20 @@ public final class LocationFactory {
     }
 
     private static Factory createLocationFactory() {
-        
+        return new DefaultLocationFactory();
     }
 
     private static final class Java8LocationFactory implements Factory {
         @Override
         public Location create(boolean inline) {
-            
+            return new Location(inline);
         }
     }
 
     private static final class DefaultLocationFactory implements Factory {
         @Override
         public Location create(boolean inline) {
-            
+            return new Location(inline);
         }
     }
 }

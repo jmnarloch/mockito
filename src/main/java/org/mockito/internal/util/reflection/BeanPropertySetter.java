@@ -31,7 +31,9 @@ public class BeanPropertySetter {
      */
     public BeanPropertySetter(
             final Object target, final Field propertyField, boolean reportNoSetterFound) {
-        
+        this.field = propertyField;
+        this.target = target;
+        this.reportNoSetterFound = reportNoSetterFound;
     }
 
     /**
@@ -40,7 +42,7 @@ public class BeanPropertySetter {
      * @param propertyField The propertyField that must be accessed through a setter
      */
     public BeanPropertySetter(final Object target, final Field propertyField) {
-        
+        this(target, propertyField, true);
     }
 
     /**
@@ -51,8 +53,27 @@ public class BeanPropertySetter {
      *          or, if <code>reportNoSetterFound</code> and setter could not be found.
      */
     public boolean set(final Object value) {
+        MemberAccessor accessor = Plugins.getMemberAccessor();
+        Method writeMethod = /*accessor.getMethod(*/setterOrProxy(field, setterName(field.getName()))/*)*/;
+        if (writeMethod == null) {
+            reportNoSetterFound();
+            return false;
+        }
 
-        
+        try {
+            accessor.invoke(writeMethod, target, value);
+            return true;
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(
+            "Setter '"
+            + writeMethod.toGenericString()
+            + "'  on '"
+            + target
+            + "' with value '"
+            + value
+            + "' threw exception",
+            e);
+        }
     }
 
     /**
@@ -64,10 +85,29 @@ public class BeanPropertySetter {
      * @return Setter name.
      */
     private String setterName(String fieldName) {
-        
+        return new StringBuilder(SET_PREFIX)
+        .append(fieldName.substring(0, 1).toUpperCase(Locale.ENGLISH))
+        .append(fieldName, 1, fieldName.length())
+        .toString();
     }
 
     private void reportNoSetterFound() {
-        
+        if (reportNoSetterFound) {
+            String setterName = setterName(field.getName());
+            String warning =
+            String.format(
+            Locale.ROOT,
+            "" +
+            "Proper setter for field should be defined when you use custom instance control:\n"
+            +
+            "  public void %s(%s value) {\n"
+                + "      // don't actually implement it\n"
+                + "  }\n"
+            + "But it's not the reason of this exception. \n"
+            + "The real reason is Mockito cannot find a correct setter (see stack trace polygenelubricants posted).",
+            setterName,
+            field.getType().getSimpleName());
+            System.err.println(warning);
+        }
     }
 }

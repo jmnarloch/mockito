@@ -10,9 +10,7 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface ThrowingConsumer<T> extends Consumer<T> {
     @Override
-    default void accept(final T input) {
-        
-    }
+    default void accept(final T input) {}
 
     void acceptThrows(T input) throws Throwable;
 }

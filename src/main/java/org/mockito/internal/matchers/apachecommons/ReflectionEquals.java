@@ -14,16 +14,17 @@ public class ReflectionEquals implements ArgumentMatcher<Object>, Serializable {
     private final String[] excludeFields;
 
     public ReflectionEquals(Object wanted, String... excludeFields) {
-        
+        this.wanted = wanted;
+        this.excludeFields = excludeFields;
     }
 
     @Override
     public boolean matches(Object actual) {
-        
+        return EqualsBuilder.reflectionEquals(wanted, actual, excludeFields);
     }
 
     @Override
     public String toString() {
-        
+        return "refEq(" + wanted + ")";
     }
 }

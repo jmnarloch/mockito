@@ -19,7 +19,7 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
     final WeakConcurrentMap<V, Boolean> target;
 
     public WeakConcurrentSet(Cleaner cleaner) {
-        
+        this.target = new WeakConcurrentMap.WithCleaner<>(cleaner);
     }
 
     /**
@@ -27,7 +27,7 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
      * @return {@code true} if the value was added to the set and was not contained before.
      */
     public boolean add(V value) {
-         // is null or Boolean.TRUE
+        return target.put(value, Boolean.TRUE) == null;
     }
 
     /**
@@ -35,7 +35,7 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
      * @return {@code true} if the set contains the value.
      */
     public boolean contains(V value) {
-        
+        return target.containsKey(value);
     }
 
     /**
@@ -43,14 +43,14 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
      * @return {@code true} if the value is contained in the set.
      */
     public boolean remove(V value) {
-        
+        return target.remove(value) != null;
     }
 
     /**
      * Clears the set.
      */
     public void clear() {
-        
+        target.clear();
     }
 
     /**
@@ -59,12 +59,12 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
      * @return The minimum size of this set.
      */
     public int approximateSize() {
-        
+        return target.approximateSize();
     }
 
     @Override
     public void run() {
-        
+        target.run();
     }
 
     /**
@@ -83,19 +83,24 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
      * Cleans all unused references.
      */
     public void expungeStaleEntries() {
-        
+        target.expungeStaleEntries();
     }
 
     /**
      * @return The cleaner thread or {@code null} if no such thread was set.
      */
     public Thread getCleanerThread() {
-        
+        return target.getCleanerThread();
     }
 
     @Override
     public Iterator<V> iterator() {
-        
+        return new ReducingIterator<V>(target.iterator()) {
+            @Override
+            protected V reduce(Map.Entry<V, Boolean> entry) {
+                return entry.getKey();
+            }
+        };
     }
 
     private static class ReducingIterator<V> implements Iterator<V> {
@@ -103,22 +108,22 @@ public class WeakConcurrentSet<V> implements Runnable, Iterable<V> {
         private final Iterator<Map.Entry<V, Boolean>> iterator;
 
         private ReducingIterator(Iterator<Map.Entry<V, Boolean>> iterator) {
-            
+            this.iterator = iterator;
         }
 
         @Override
         public void remove() {
-            
+            iterator.remove();
         }
 
         @Override
         public V next() {
-            
+            return iterator.next().getKey();
         }
 
         @Override
         public boolean hasNext() {
-            
+            return iterator.hasNext();
         }
     }
 }

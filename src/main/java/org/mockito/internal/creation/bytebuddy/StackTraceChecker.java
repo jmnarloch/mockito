@@ -10,6 +10,14 @@ class StackTraceChecker implements Predicate<Class<?>> {
 
     @Override
     public boolean test(Class<?> type) {
-        
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        for (int index = 1; index < stackTrace.length - 1; index++) {
+            if (!stackTrace[index].getClassName().startsWith(Dispatcher.class.getName())
+            && !stackTrace[index + 1].getClassName().startsWith(
+            TypeCachingBytecodeGenerator.class.getPackage().getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

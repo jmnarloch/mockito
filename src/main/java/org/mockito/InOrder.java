@@ -98,8 +98,8 @@ public interface InOrder {
      * @see #verify(MockedStatic, MockedStatic.Verification, VerificationMode)
      */
     default void verify(MockedStatic<?> mockedStatic, MockedStatic.Verification verification) {
-        
-    }
+    verify(mockedStatic, verification, times(1));
+}
 
     /**
      * Verifies static interaction in order. E.g:

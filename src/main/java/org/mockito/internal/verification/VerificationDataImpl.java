@@ -21,20 +21,27 @@ public class VerificationDataImpl implements VerificationData {
     private final InvocationContainerImpl invocations;
 
     public VerificationDataImpl(InvocationContainerImpl invocations, InvocationMatcher wanted) {
-        
+        this.invocations = invocations;
+        this.wanted = wanted;
+        this.assertWantedIsVerifiable();
     }
 
     @Override
     public List<Invocation> getAllInvocations() {
-        
+        return invocations.getInvocations();
     }
 
     @Override
     public MatchableInvocation getTarget() {
-        
+        return wanted;
     }
 
     private void assertWantedIsVerifiable() {
-        
+        if (wanted == null) {
+            return;
+        }
+        if (isToStringMethod(wanted.getMethod())) {
+            throw cannotVerifyToString();
+        }
     }
 }

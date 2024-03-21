@@ -62,33 +62,55 @@ class LocationImpl implements Location, Serializable {
     private volatile String stackTraceLine;
 
     LocationImpl(boolean isInline) {
-        
+        this.sfm = getStackFrame(isInline);
     }
 
     @Override
     public String getSourceFile() {
-        
+        return sfm.getFileName();
     }
 
     @Override
     public String toString() {
-        
+        return stackTraceLine();
     }
 
     private String stackTraceLine() {
-        
+        if (stackTraceLine == null) {
+            synchronized (this) {
+                if (stackTraceLine == null) {
+                    stackTraceLine = PREFIX + CLEANER.get().toStackTraceElement(sfm);
+                }
+            }
+        }
+        return stackTraceLine;
     }
 
     private static StackFrameMetadata getStackFrame(boolean isInline) {
-        
+        return stackWalk(
+        stream ->
+        stream.map(toStackFrameMetadata)
+        .skip(FRAMES_TO_SKIP)
+        .filter(cleanerIsIn)
+        .skip(isInline ? 1 : 0)
+        .findFirst()
+        .orElseThrow(
+        () -> new IllegalStateException(noStackTraceFailureMessage())));
     }
 
     private static boolean usingDefaultStackTraceCleaner() {
-        
+        return CLEANER instanceof DefaultStackTraceCleaner;
     }
 
     private static String noStackTraceFailureMessage() {
-        
+        String header =
+        "Sorry, the current VM is not able to use java.lang.StackWalker, and so cannot reliably generate a useful stack trace.\n";
+        if (usingDefaultStackTraceCleaner()) {
+            return header
+            + "This is unexpected and is likely due to a change in the JVM's security policy.\n"
+            + "It's worth trying to upgrade to a newer version of Mockito, or otherwise to file a bug report.";
+        }
+        return header + CLEANER.getTrimmedFirstLine() + UNEXPECTED_ERROR_SUFFIX;
     }
 
     /**
@@ -96,15 +118,25 @@ class LocationImpl implements Location, Serializable {
      * ensure there are no non-Mockito frames at the top of the stack trace.
      */
     private static int framesToSkip() {
-        
+        Runnable r =
+        new Runnable() {
+            @Override
+            public void run() {}
+        };
+        r.run(); // Ensure the lambda has its own frame.
+        return (int)
+        stackWalk(
+        (Function<Stream<StackFrame>, Long>)
+        s -> s.map(ignored -> 0).findFirst().get());
     }
 
     private static <T> T stackWalk(Function<Stream<StackFrame>, T> function) {
-        
+        return (T) STACK_WALKER.walk(function);
     }
 
     private static StackWalker stackWalker() {
-        
+        return StackWalker.getInstance(
+        Collections.singleton(Option.SHOW_REFLECT_FRAMES), BUFFER_SIZE);
     }
 
     private static final class MetadataShim implements StackFrameMetadata, Serializable {
@@ -112,39 +144,39 @@ class LocationImpl implements Location, Serializable {
         private final StackFrame stackFrame;
 
         private MetadataShim(StackFrame stackFrame) {
-            
+            this.stackFrame = stackFrame;
         }
 
         @Override
         public String getClassName() {
-            
+            return stackFrame.getClassName();
         }
 
         @Override
         public String getMethodName() {
-            
+            return stackFrame.getMethodName();
         }
 
         @Override
         public String getFileName() {
-            
+            return stackFrame.getFileName();
         }
 
         @Override
         public int getLineNumber() {
-            
+            return stackFrame.getLineNumber();
         }
 
         @Override
         public String toString() {
-            
+            return stackFrame.toString();
         }
 
         /**
          * Ensure that this type remains serializable.
          */
         private Object writeReplace() {
-            
+            return new SerializableShim(stackFrame.toStackTraceElement());
         }
     }
 
@@ -153,27 +185,27 @@ class LocationImpl implements Location, Serializable {
         private final StackTraceElement ste;
 
         private SerializableShim(StackTraceElement ste) {
-            
+            this.ste = ste;
         }
 
         @Override
         public String getClassName() {
-            
+            return ste.getClassName();
         }
 
         @Override
         public String getMethodName() {
-            
+            return ste.getMethodName();
         }
 
         @Override
         public String getFileName() {
-            
+            return ste.getFileName();
         }
 
         @Override
         public int getLineNumber() {
-            
+            return ste.getLineNumber();
         }
     }
 }

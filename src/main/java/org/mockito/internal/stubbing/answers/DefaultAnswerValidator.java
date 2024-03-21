@@ -11,6 +11,6 @@ import org.mockito.invocation.InvocationOnMock;
 public abstract class DefaultAnswerValidator {
     public static void validateReturnValueFor(InvocationOnMock invocation, Object returnedValue)
             throws Throwable {
-        
+        new ReturnValueValidator(invocation).validateReturnedValueOrError(returnedValue);
     }
 }

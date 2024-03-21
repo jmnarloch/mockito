@@ -19,20 +19,22 @@ public class OngoingStubbingImpl<T> extends BaseStubbing<T> {
     private Strictness strictness;
 
     public OngoingStubbingImpl(InvocationContainerImpl invocationContainer) {
-        
+        this.invocationContainer = invocationContainer;
     }
 
     @Override
     public OngoingStubbing<T> thenAnswer(Answer<?> answer) {
-        
+        if (strictness == Strictness.STRICT_STUBS) {
+            invocationContainer.setInvocationForStricterChecks(invocationContainer.removeLast());
+        }
+        return this.invocationContainer.addAnswer(answer);
     }
 
     public List<Invocation> getRegisteredInvocations() {
-        // TODO interface for tests
-        
+        return invocationContainer.getInvocations();
     }
 
     public void setStrictness(Strictness strictness) {
-        
+        this.strictness = strictness;
     }
 }

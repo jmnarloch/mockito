@@ -16,7 +16,5 @@ public class NoInteractions implements VerificationMode {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void verify(VerificationData data) {
-        
-    }
+    public void verify(VerificationData data) {}
 }

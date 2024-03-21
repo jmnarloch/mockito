@@ -33,42 +33,50 @@ public class InvocationMatcher implements MatchableInvocation, DescribedInvocati
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public InvocationMatcher(Invocation invocation, List<ArgumentMatcher> matchers) {
-        
+        this(invocation, Collections.<ArgumentMatcher<?>>emptyList());
     }
 
     @SuppressWarnings("rawtypes")
+    public InvocationMatcher(Invocation invocation) {"unchecked", "rawtypes"})
     public InvocationMatcher(Invocation invocation) {
-        
+        this(invocation, Collections.<ArgumentMatcher>emptyList());
     }
 
     public static List<InvocationMatcher> createFrom(List<Invocation> invocations) {
-        
+        LinkedList<InvocationMatcher> out = new LinkedList<>();
+        for (Invocation i : invocations) {
+            out.add(new InvocationMatcher(i));
+        }
+        return out;
     }
 
     public Method getMethod() {
-        
+        return invocation.getMethod();
     }
 
     @Override
     public Invocation getInvocation() {
-        
+        return invocation;
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public List<ArgumentMatcher> getMatchers() {
-        
+        return matchers;
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public String toString() {
-        
+        return new PrintSettings().print(invocation);
     }
 
     @Override
     public boolean matches(Invocation candidate) {
-        
+        return this.invocation.getMock() == candidate.getMock()
+        && this.hasSameMethod(candidate)
+        && this.matchers.size() == candidate.getArguments().length
+        && matchesTypeSafe(candidate, this.matchers, getMatcherApplicationStrategyFor(candidate));
     }
 
     /**
@@ -76,33 +84,48 @@ public class InvocationMatcher implements MatchableInvocation, DescribedInvocati
      */
     @Override
     public boolean hasSimilarMethod(Invocation candidate) {
-        
+        if (!candidate.getMock().getMockName().equals(invocation.getMock().getMockName())
+        || candidate.isVerified()
+        || hasSameMethod(candidate)) {
+            return false;
+        }
+        return matchesTypeSafe(candidate, this, getMatcherApplicationStrategyFor(candidate));
     }
 
     @Override
     public boolean hasSameMethod(Invocation candidate) {
-        // not using method.equals() for 1 good reason:
-        // sometimes java generates forwarding methods when generics are in play see
-        // JavaGenericsForwardingMethodsTest
-        
+        return this.invocation.getMethod().equals(candidate.getMethod());
     }
 
     @Override
     public Location getLocation() {
-        
+        return invocation.getLocation();
     }
 
     @Override
     public void captureArgumentsFrom(Invocation invocation) {
-        
+        MatcherApplicationStrategy strategy =
+        getMatcherApplicationStrategyFor(invocation, matchers);
+        strategy.forEachMatcherAndArgument(captureArgument());
     }
 
     private ArgumentMatcherAction captureArgument() {
-        
+        return new ArgumentMatcherAction() {
+
+            @Override
+            public boolean apply(ArgumentMatcher<?> matcher, Object argument) {
+                if (matcher instanceof CapturesArguments) {
+                    ((CapturesArguments) matcher).captureFrom(argument);
+                }
+
+                return true;
+            }
+        };
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private boolean argumentsMatch(Invocation actual) {
-        
+        List matchersWantedCopy = new LinkedList(matchers);
+        return getMatcherApplicationStrategyFor(i).forEachMatcher(i, matchersWantedCopy);
     }
 }

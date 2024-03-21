@@ -24,15 +24,15 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
     private static final ConcurrentMap<Class<?>, Class<?>> argumentTypeCache =
             new ConcurrentHashMap<>();
 
-    private TypeSafeMatching() { }
+    private TypeSafeMatching() {}
 
     public static ArgumentMatcherAction matchesTypeSafe() {
-        
+        return TYPE_SAFE_MATCHING_ACTION;
     }
 
     @Override
     public boolean apply(ArgumentMatcher matcher, Object argument) {
-        
+        return isCompatible(matcher, argument) && matcher.matches(argument);
     }
 
     /**
@@ -41,11 +41,23 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ClassCastException}.
      */
     private static boolean isCompatible(ArgumentMatcher<?> argumentMatcher, Object argument) {
-        
+        if (argument == null) {
+            return true;
+        }
+
+        Class<?> expectedType = getArgumentType(argumentMatcher);
+
+        return expectedType.isInstance(argument);
     }
 
     private static Class<?> getArgumentType(ArgumentMatcher<?> matcher) {
-        
+        if (argumentTypeCache.containsKey(matcher.getClass())) {
+            return argumentTypeCache.get(matcher.getClass());
+        }
+
+        Class<?> type = getArgumentTypeUncached(matcher);
+        argumentTypeCache.putIfAbsent(matcher.getClass(), type);
+        return type;
     }
 
     /**
@@ -53,7 +65,8 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ArgumentMatcher} implementation.
      */
     private static Class<?> getArgumentTypeUncached(ArgumentMatcher<?> argumentMatcher) {
-        
+        Method method = argumentMatcher.getClass().getMethods()[0];
+        return method.getParameterTypes()[0];
     }
 
     /**
@@ -61,6 +74,12 @@ public class TypeSafeMatching implements ArgumentMatcherAction {
      * {@link ArgumentMatcher#matches(Object)}
      */
     private static boolean isMatchesMethod(Method method) {
-        
+        if (method.getParameterTypes().length != 1) {
+            return false;
+        }
+        if (method.isBridge()) {
+            return false;
+        }
+        return "matches".equals(method.getName());
     }
 }

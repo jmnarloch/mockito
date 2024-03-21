@@ -11,6 +11,14 @@ import org.mockito.internal.exceptions.VerificationAwareInvocation;
 public class ScenarioPrinter {
 
     public String print(List<VerificationAwareInvocation> invocations) {
-        
+        StringBuilder sb = new StringBuilder();
+        int i = 1;
+        for (VerificationAwareInvocation ian : invocations) {
+            sb.append("  ").append(i).append(". ");
+            sb.append(new InvocationMatcher(ian).getLocation());
+            sb.append(StackTracePrinter.NEWLINE);
+            i++;
+        }
+        return sb.toString();
     }
 }

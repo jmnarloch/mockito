@@ -39,21 +39,40 @@ public class MockHandlerImpl<T> implements MockHandler<T> {
     private final MockCreationSettings<T> mockSettings;
 
     public MockHandlerImpl(MockCreationSettings<T> mockSettings) {
-        
+        this.mockSettings = mockSettings;
+
+        this.invocationContainer = new InvocationContainerImpl(mockSettings);
     }
 
     @Override
     public Object handle(Invocation invocation) throws Throwable {
-        
+        VerificationMode verificationMode = mockingProgress().pullVerificationMode();
+        if (verificationMode != null) {
+            VerificationDataImpl data =
+            new VerificationDataImpl(
+            getMock(), getInvocationContainer(), invocation, verificationMode);
+            verificationMode.verify(data);
+            return null;
+        }
+
+        InvocationMatcher invocationMatcher =
+        matchersBinder.bindMatchers(
+        getMock(), getInvocationContainer(), invocation, mockSettings);
+        mockingProgress().reset();
+        try {
+            return getInvocationContainer().findAnswer(invocationMatcher);
+        } finally {
+            notifyStubbedAnswerLookup();
+        }
     }
 
     @Override
     public MockCreationSettings<T> getMockSettings() {
-        
+        return mockSettings;
     }
 
     @Override
     public InvocationContainer getInvocationContainer() {
-        
+        return invocationContainer;
     }
 }

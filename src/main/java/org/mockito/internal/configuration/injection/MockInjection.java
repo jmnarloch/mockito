@@ -29,7 +29,7 @@ public final class MockInjection {
      * @return New configuration builder
      */
     public static OngoingMockInjection onField(Field field, Object ofInstance) {
-        
+        return new OngoingMockInjection(field, ofInstance);
     }
 
     /**
@@ -41,7 +41,7 @@ public final class MockInjection {
      * @return New configuration builder
      */
     public static OngoingMockInjection onFields(Set<Field> fields, Object ofInstance) {
-        
+        return new OngoingMockInjection(fields, ofInstance);
     }
 
     /**
@@ -55,33 +55,43 @@ public final class MockInjection {
         private final MockInjectionStrategy postInjectionStrategies = MockInjectionStrategy.nop();
 
         private OngoingMockInjection(Field field, Object fieldOwner) {
-            
+            fields.add(field);
+            this.fieldOwner = fieldOwner;
         }
 
         private OngoingMockInjection(Set<Field> fields, Object fieldOwner) {
-            
+            checkItemsNotNull(fields, fieldOwner);
+            this.fields.addAll(fields);
+            this.fieldOwner = fieldOwner;
         }
 
         public OngoingMockInjection withMocks(Set<Object> mocks) {
-            
+            checkItemsNotNull(mocks, "Set with mocks");
+            this.mocks.addAll(mocks);
+            return this;
         }
 
         public OngoingMockInjection tryConstructorInjection() {
-            
+            return this;
         }
 
         public OngoingMockInjection tryPropertyOrFieldInjection() {
-            
+            return this;
         }
 
         public OngoingMockInjection handleSpyAnnotation() {
-            
+            return this.postInjectionStrategies.tryTypeUsingDummyInjectionFirst();
         }
 
         public void apply() {
-            
+            checkItemsNotNull(fields, injectionStrategies, postInjectionStrategies);
+            for (Field field : fields) {
+                Object mock = injectionStrategies.findMock(field, mocks);
+                mock = postInjectionStrategies.process(field, fieldOwner, mock);
+                injectionStrategies.injectMock(field, fieldOwner, mock);
+            }
         }
     }
 
-    private MockInjection() { }
+    private MockInjection() {}
 }

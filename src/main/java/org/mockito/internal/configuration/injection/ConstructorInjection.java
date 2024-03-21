@@ -37,11 +37,25 @@ import org.mockito.internal.util.reflection.FieldInitializer.ConstructorArgument
  */
 public class ConstructorInjection extends MockInjectionStrategy {
 
-    public ConstructorInjection() { }
+    public ConstructorInjection() {}
 
     @Override
     public boolean processInjection(Field field, Object fieldOwner, Set<Object> mockCandidates) {
-        
+        final ConstructorArgumentResolver constructorArgumentResolver =
+        new ConstructorArgumentResolver(fieldOwner, mockCandidates);
+        final SimpleArgumentResolver simpleArgumentResolver =
+        new SimpleArgumentResolver(mockCandidates);
+        final FieldInitializer initializer =
+        new FieldInitializer(fieldOwner, field, constructorArgumentResolver);
+        try {
+            return initializer.inject() || initializer.assignOtherConstructor(simpleArgumentResolver);
+        } catch (MockitoException e) {
+            if (e.getCause() instanceof InvocationTargetException) {
+                Throwable realCause = e.getCause().getCause();
+                throw fieldInitialisationThrewException(field, realCause);
+            }
+            throw e;
+        }
     }
 
     /**
@@ -51,16 +65,25 @@ public class ConstructorInjection extends MockInjectionStrategy {
         final Set<Object> objects;
 
         public SimpleArgumentResolver(Set<Object> objects) {
-            
+            this.objects = objects;
         }
 
         @Override
         public Object[] resolveTypeInstances(Class<?>... argTypes) {
-            
+            List<Object> resolved = new ArrayList<>(argTypes.length);
+            for (Class<?> argType : argTypes) {
+                resolved.add(objectThatIsAssignableFrom(argType));
+            }
+            return resolved.toArray(new Object[0]);
         }
 
         private Object objectThatIsAssignableFrom(Class<?> argType) {
-            
+            for (Object candidate : objects) {
+                if (argType.isAssignableFrom(candidate.getClass())) {
+                    return candidate;
+                }
+            }
+            return null;
         }
     }
 }

@@ -23,27 +23,59 @@ public class InvocationInfo implements AbstractAwareMethod {
     private final InvocationOnMock invocation;
 
     public InvocationInfo(InvocationOnMock theInvocation) {
-        
+        this.method = theInvocation.getMethod();
+        this.invocation = theInvocation;
     }
 
     public boolean isValidException(final Throwable throwable) {
-        
+        if (isValidException(this.method, throwable)) {
+            return true;
+        }
+
+        for (Class<?> parent : GenericMetadataSupport.inferFrom(this.method).rawCodes()) {
+            if (isValidExceptionForParents(parent, throwable)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isValidExceptionForParents(final Class<?> parent, final Throwable throwable) {
-        
+        boolean isValid = false;
+        final List<Class<?>> parents = new ArrayList<>(Primitives.allWrapperSuperTypes(parent));
+        parents.add(parent);
+        for (Class<?> current : parents) {
+            isValid = isValidExceptionForClass(current, throwable);
+            if (isValid) {
+                break;
+            }
+        }
+        return isValid;
     }
 
     private boolean isValidExceptionForClass(final Class<?> parent, final Throwable throwable) {
-        
+        try {
+            Primitives.primitiveTypeOf(parent);
+            return parent.isAssignableFrom(Throwable.class);
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private boolean isValidException(final Method method, final Throwable throwable) {
-        
+        if (isValidExceptionForClass(method.getExceptionTypes()[0], throwable)) {
+            return true;
+        }
+        return isValidExceptionForParents(method.getExceptionTypes()[0], throwable);
     }
 
     public boolean isValidReturnType(Class<?> clazz) {
-        
+        if (method.getReturnType().isPrimitive() || clazz.isPrimitive()) {
+            return Primitives.primitiveTypeOf(clazz)
+            == Primitives.primitiveTypeOf(method.getReturnType());
+        } else {
+            return method.getReturnType().isAssignableFrom(clazz);
+        }
     }
 
     /**
@@ -51,31 +83,31 @@ public class InvocationInfo implements AbstractAwareMethod {
      * E.g:  {@code void foo()} or {@code Void bar()}
      */
     public boolean isVoid() {
-        
+        return method.getReturnType() == Void.TYPE || method.getReturnType() == Void.class;
     }
 
     public String printMethodReturnType() {
-        
+        return method.getReturnType().getSimpleName();
     }
 
     public String getMethodName() {
-        
+        return method.getName();
     }
 
     public boolean returnsPrimitive() {
-        
+        return method.getReturnType().isPrimitive();
     }
 
     public Method getMethod() {
-        
+        return method;
     }
 
     public boolean isDeclaredOnInterface() {
-        
+        return method.getDeclaringClass().isInterface();
     }
 
     @Override
     public boolean isAbstract() {
-        
+        return (method.getModifiers() & Modifier.ABSTRACT) != 0;
     }
 }

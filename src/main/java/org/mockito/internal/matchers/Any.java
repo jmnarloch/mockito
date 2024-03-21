@@ -13,13 +13,17 @@ public class Any implements ArgumentMatcher<Object>, Serializable {
     public static final Any ANY = new Any();
 
     @Override
-    public boolean matches(Object actual) { }
+    public boolean matches(Object actual) {
+        return true;
+    }
 
     @Override
-    public String toString() { }
+    public String toString() {
+        return "<any>";
+    }
 
     @Override
     public Class<?> type() {
-        
+        return Object.class;
     }
 }

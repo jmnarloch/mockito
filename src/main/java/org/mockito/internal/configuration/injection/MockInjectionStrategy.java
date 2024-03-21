@@ -16,7 +16,13 @@ public abstract class MockInjectionStrategy {
      * NOP Strategy that will always try the next strategy.
      */
     public static MockInjectionStrategy nop() {
-        
+        return new MockInjectionStrategy() {
+            @Override
+            protected boolean processInjection(
+            Field field, Object fieldOwner, Set<Object> mockCandidates) {
+                return false;
+            }
+        };
     }
 
     private MockInjectionStrategy nextStrategy;
@@ -32,7 +38,12 @@ public abstract class MockInjectionStrategy {
      * @return The passed strategy instance to allow chaining.
      */
     public MockInjectionStrategy thenTry(MockInjectionStrategy strategy) {
-        
+        if (nextStrategy != null) {
+            nextStrategy.thenTry(strategy);
+        } else {
+            nextStrategy = strategy;
+        }
+        return strategy;
     }
 
     /**
@@ -54,7 +65,10 @@ public abstract class MockInjectionStrategy {
      * @return <code>true</code> if successful, <code>false</code> otherwise.
      */
     public boolean process(Field onField, Object fieldOwnedBy, Set<Object> mockCandidates) {
-        
+        if (processInjection(onField, fieldOwnedBy, mockCandidates)) {
+            return true;
+        }
+        return relayProcessToNextStrategy(onField, fieldOwnedBy, mockCandidates);
     }
 
     /**
@@ -74,6 +88,6 @@ public abstract class MockInjectionStrategy {
 
     private boolean relayProcessToNextStrategy(
             Field field, Object fieldOwner, Set<Object> mockCandidates) {
-        
+        return nextStrategy != null && nextStrategy.process(field, fieldOwner, mockCandidates);
     }
 }

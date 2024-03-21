@@ -82,11 +82,11 @@ public enum Answers implements Answer<Object> {
     private final Answer<Object> implementation;
 
     Answers(Answer<Object> implementation) {
-        
+        this.implementation = implementation;
     }
 
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        
+        return new GloballyConfiguredAnswer().answer(invocation);
     }
 }

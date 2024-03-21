@@ -20,9 +20,7 @@ public interface MemberAccessor {
 
     default Object newInstance(
             Constructor<?> constructor, OnConstruction onConstruction, Object... arguments)
-            throws InstantiationException, InvocationTargetException, IllegalAccessException {
-        
-    }
+            throws InstantiationException, InvocationTargetException, IllegalAccessException {}
 
     Object invoke(Method method, Object target, Object... arguments)
             throws InvocationTargetException, IllegalAccessException;

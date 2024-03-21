@@ -13,11 +13,11 @@ public class ThreadSafeMockingProgress {
             new ThreadLocal<MockingProgress>() {
                 @Override
                 protected MockingProgress initialValue() {
-                    
-                }
+        return new MockingProgress();
+    }
             };
 
-    private ThreadSafeMockingProgress() { }
+    private ThreadSafeMockingProgress() {}
 
     /**
      * Returns the {@link MockingProgress} for the current Thread.
@@ -27,6 +27,6 @@ public class ThreadSafeMockingProgress {
      * @return never <code>null</code>
      */
     public static final MockingProgress mockingProgress() {
-        
+        return MOCKING_PROGRESS_PROVIDER.get();
     }
 }

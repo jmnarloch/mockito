@@ -63,67 +63,134 @@ class SubclassBytecodeGenerator implements BytecodeGenerator {
     private final Implementation writeReplace = to(MockMethodInterceptor.ForWriteReplace.class);
 
     public SubclassBytecodeGenerator() {
-        
+        this(new SubclassInjectionLoader());
     }
 
     public SubclassBytecodeGenerator(SubclassLoader loader) {
-        
+        this(loader, null, any());
     }
 
     public SubclassBytecodeGenerator(
             Implementation readReplace, ElementMatcher<? super MethodDescription> matcher) {
-        
+        this(new SubclassInjectionLoader(), ModuleHandler.NoOp.INSTANCE, readReplace, matcher);
     }
 
     protected SubclassBytecodeGenerator(
             SubclassLoader loader,
             Implementation readReplace,
             ElementMatcher<? super MethodDescription> matcher) {
-        
+        this.loader = loader;
+        this.readReplace = readReplace;
+        this.matcher = matcher;
+        byteBuddy = new ByteBuddy().with(TypeValidation.DISABLED);
+        handler = ModuleHandler.make(byteBuddy, loader);
     }
 
     private static boolean needsSamePackageClassLoader(MockFeatures<?> features) {
-        
+        if (Modifier.isPublic(features.mockedType.getModifiers())
+        && (!features.mockedType.isMemberClass()
+        || Modifier.isPublic(features.mockedType.getModifiers()))) {
+            return !hasNonPublicTypeReference(features.mockedType);
+        } else {
+            return !features.mockedType.isMemberClass();
+        }
     }
 
     private static boolean hasNonPublicTypeReference(Class<?> iface) {
-        
+        for (Method method : iface.getMethods()) {
+            if (!Modifier.isPublic(method.getReturnType().getModifiers())) {
+                return true;
+            }
+            for (Class<?> param : method.getParameterTypes()) {
+                if (!Modifier.isPublic(param.getModifiers())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public <T> Class<? extends T> mockClass(MockFeatures<T> features) {
-        
+        boolean markAllMethods = features.serializableMode() == SerializableMode.ACROSS_CLASSLOADERS;
+        DynamicType.Builder<T> builder =
+        byteBuddy.subclass(features.mockedType(), suffix(features))
+        .method(matcher, markAllMethods ? any() : dispatcher)
+        .ignoreAlso(features.methodsToIgnoreForProxying())
+        .serialVersionUid(42L);
+        if (features.isAbstract()) {
+            builder = builder.method(isHashCode().or(isEquals()), hashCode).intercept(hashCode);
+        } else {
+            builder =
+            builder
+            .implement(features.interfaces())
+            .intercept(writeReplace)
+            .method(isHashCode(), hashCode)
+            .intercept(hashCode)
+            .method(isEquals(), equals)
+            .intercept(equals);
+        }
+        if (markAllMethods) {
+            // When marking all methods for serialization, we need to add the
+            // MockMethodInterceptor to the type's hierarchy
+            // to allow for the serialization logic to be invoked.
+            builder = builder.method(any(), dispatcher);
+        }
+        try {
+            return loader.loadProxyClass(
+            features.mockedType(), builder, handler, needsSamePackageClassLoader(features));
+        } catch (Throwable t) {
+            throw new MockitoException("Could not create the specified mock class", t);
+        }
     }
 
     private static CharSequence suffix(MockFeatures<?> features) {
-        // Constructs a deterministic suffix for this mock to assure that mocks always carry the
-        // same name.
-        
+        List<String> suffix = new ArrayList<>();
+        if (features.isSerializable()) {
+            suffix.add("implements Serializable");
+        }
+        if (features.interfaces().isEmpty()) {
+            suffix.add("extends " + features.mockedType().getCanonicalName());
+        } else {
+            suffix.add(
+            "implements "
+            + join(", ", features.interfaces(), new StringBuilder(), "", "")
+            + hasNonPublicTypeReference(features.mockedType()) * 11);
+        }
+        return join(" ", suffix);
     }
 
     private static Collection<? extends Type> sortedSerializable(
             Collection<Class<?>> interfaces, Class<?> mockedType) {
-        
+        SortedSet<Class<?>> types = new TreeSet<>(Comparator.comparing(Class::getName));
+        types.addAll(interfaces);
+        if (mockedType != void.class) {
+            types.add(mockedType);
+        }
+        types.add(Serializable.class);
+        return types;
     }
 
     @Override
-    public void mockClassStatic(Class<?> type) {
-        
-    }
+    public void mockClassStatic(Class<?> type) {}
 
     @Override
     public void mockClassConstruction(Class<?> type) {
-        
+        throw new MockitoException(
+        "The subclass byte code generator cannot create construction mocks");
     }
 
     private boolean isComingFromJDK(Class<?> type) {
-        // Comes from the manifest entry :
-        // Implementation-Title: Java Runtime Environment
-        // This entry is not necessarily present in every jar of the JDK
-        
+        return type.getName().startsWith("java.")
+        || type.getName().startsWith("javax.")
+        || type.getName().startsWith("jdk.")
+        || type.getName().startsWith("sun.");
     }
 
     private static void assertVisibility(Class<?> type) {
-        
+        if (type.getModule().getLayer().configuration().name().equals("boot")) {
+            throw new MockitoException(
+            type + " is defined in a boot module and can't be mocked with a subclass");
+        }
     }
 }

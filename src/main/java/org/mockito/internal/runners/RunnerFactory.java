@@ -24,14 +24,26 @@ public class RunnerFactory {
 
     /** Creates silent runner implementation */
     public InternalRunner create(Class<?> klass) throws InvocationTargetException {
-        
+        return create(
+        klass,
+        new Supplier<MockitoTestListener>() {
+            public MockitoTestListener get() {
+                return new NoOpTestListener();
+            }
+        });
     }
 
     /**
      * Creates strict runner implementation
      */
     public InternalRunner createStrict(Class<?> klass) throws InvocationTargetException {
-        
+        return create(
+        klass,
+        new Supplier<MockitoTestListener>() {
+            public MockitoTestListener get() {
+                return new MismatchReportingTestListener();
+            }
+        });
     }
 
     /**
@@ -40,7 +52,13 @@ public class RunnerFactory {
      * TODO, let's try to apply Brice suggestion and use switch + Strictness
      */
     public InternalRunner createStrictStubs(Class<?> klass) throws InvocationTargetException {
-        
+        return create(
+        klass,
+        new Supplier<MockitoTestListener>() {
+            public MockitoTestListener get() {
+                return new StrictStubsRunnerTestListener();
+            }
+        });
     }
 
     /**
@@ -48,6 +66,13 @@ public class RunnerFactory {
      */
     public InternalRunner create(Class<?> klass, Supplier<MockitoTestListener> listenerSupplier)
             throws InvocationTargetException {
-        
+        if (hasTestMethods(klass)) {
+            try {
+                return new InternalRunner(new RunnerImpl(new RunnerProvider().provideRunner(klass)));
+            } catch (NoClassDefFoundError | Exception e) {
+                return new ErrorCreatingRunner(e, klass);
+            }
+        }
+        return new InternalRunner(new NoOpJUnitRunner());
     }
 }

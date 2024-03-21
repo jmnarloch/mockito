@@ -31,7 +31,7 @@ public final class MockitoJUnit {
      * @since 1.10.17
      */
     public static MockitoRule rule() {
-        
+        return new JUnitRule(Plugins.getMockitoLogger(), Strictness.WARN);
     }
 
     /**
@@ -45,7 +45,7 @@ public final class MockitoJUnit {
      * @since 3.3.0
      */
     public static MockitoTestRule testRule(Object testInstance) {
-        
+        return new JUnitTestRule(Plugins.getMockitoLogger(), testInstance, Strictness.WARN);
     }
 
     /**
@@ -56,8 +56,8 @@ public final class MockitoJUnit {
      * @since 2.1.0
      */
     public static VerificationCollector collector() {
-        
+        return new VerificationCollectorImpl();
     }
 
-    private MockitoJUnit() { }
+    private MockitoJUnit() {}
 }

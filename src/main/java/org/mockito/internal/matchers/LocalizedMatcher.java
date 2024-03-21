@@ -15,14 +15,15 @@ public class LocalizedMatcher {
     private final Location location;
 
     public LocalizedMatcher(ArgumentMatcher<?> matcher) {
-        
+        this.matcher = matcher;
+        this.location = LocationFactory.create();
     }
 
     public Location getLocation() {
-        
+        return location;
     }
 
     public ArgumentMatcher<?> getMatcher() {
-        
+        return matcher;
     }
 }

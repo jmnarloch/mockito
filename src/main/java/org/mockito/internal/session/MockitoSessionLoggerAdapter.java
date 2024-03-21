@@ -12,11 +12,11 @@ public class MockitoSessionLoggerAdapter implements MockitoSessionLogger {
     private final MockitoLogger logger;
 
     public MockitoSessionLoggerAdapter(MockitoLogger logger) {
-        
+        this.logger = logger;
     }
 
     @Override
     public void log(String hint) {
-        
+        logger.log(hint);
     }
 }

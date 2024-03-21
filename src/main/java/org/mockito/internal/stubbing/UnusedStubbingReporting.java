@@ -15,8 +15,8 @@ public final class UnusedStubbingReporting {
      * Lenient stubbings are not reported as unused.
      */
     public static boolean shouldBeReported(Stubbing stubbing) {
-        
+        return !stubbing.wasUsed() && stubbing.getStrictness() == Strictness.STRICT_STUBS;
     }
 
-    private UnusedStubbingReporting() { }
+    private UnusedStubbingReporting() {}
 }

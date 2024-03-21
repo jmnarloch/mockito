@@ -35,7 +35,16 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      * @param cleanerThread {@code true} if a thread should be started that removes stale entries.
      */
     public WeakConcurrentMap(boolean cleanerThread) {
-        
+        target = new ConcurrentHashMap<>();
+        if (cleanerThread) {
+            thread = new Thread(this);
+            thread.setName("weak-ref-cleaner-" + ID.getAndIncrement());
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.setDaemon(true);
+            thread.start();
+        } else {
+            thread = null;
+        }
     }
 
     /**
@@ -44,7 +53,10 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      */
     @SuppressWarnings("CollectionIncompatibleType")
     public V get(K key) {
-        
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        return target.get(new LatentKey<K>(key));
     }
 
     /**
@@ -53,7 +65,10 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      */
     @SuppressWarnings("CollectionIncompatibleType")
     public boolean containsKey(K key) {
-        
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        return target.containsKey(key);
     }
 
     /**
@@ -62,7 +77,8 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      * @return The previous entry or {@code null} if it does not exist.
      */
     public V put(K key, V value) {
-        
+        if (value == null) return null;
+        return target.put(new WeakKey<K>(key, this), value);
     }
 
     /**
@@ -71,14 +87,17 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      */
     @SuppressWarnings("CollectionIncompatibleType")
     public V remove(K key) {
-        
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        return target.remove(new LatentKey<K>(key));
     }
 
     /**
      * Clears the entire map.
      */
     public void clear() {
-        
+        target.clear();
     }
 
     /**
@@ -88,20 +107,25 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      * @param key The key for which to create a default value.
      * @return The default value for a key without value or {@code null} for not defining a default value.
      */
-    protected V defaultValue(K key) { }
+    protected V defaultValue(K key) {
+        return null;
+    }
 
     /**
      * @return The cleaner thread or {@code null} if no such thread was set.
      */
     public Thread getCleanerThread() {
-        
+        return thread;
     }
 
     /**
      * Cleans all unused references.
      */
     public void expungeStaleEntries() {
-        
+        Reference<?> reference;
+        while ((reference = poll()) != null) {
+            target.remove(reference);
+        }
     }
 
     /**
@@ -110,17 +134,26 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
      * @return The minimum size of this map.
      */
     public int approximateSize() {
-        
+        return target.size();
     }
 
     @Override
     public void run() {
-        
+        try {
+            while (true) {
+                if (target.size() > 1000) {
+                    expungeStaleEntries();
+                }
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
+            // Ok
+        }
     }
 
     @Override
     public Iterator<Map.Entry<K, V>> iterator() {
-        
+        return new EntryIterator(target.entrySet().iterator());
     }
 
     /*
@@ -159,17 +192,27 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
         private final int hashCode;
 
         WeakKey(T key, ReferenceQueue<? super T> queue) {
-            
+            super(key, queue);
+            hashCode = System.identityHashCode(key);
         }
 
         @Override
         public int hashCode() {
-            
+            return hashCode;
         }
 
         @Override
         public boolean equals(Object other) {
-            
+            if (this == other) {
+                return true;
+            }
+            if (other == null || getClass() != other.getClass()) {
+                return false;
+            }
+            WeakKey<?> weakKey = (WeakKey<?>) other;
+            Object self = get();
+            Object otherRef = weakKey.get();
+            return self == otherRef || (self != null && otherRef != null && self == otherRef);
         }
     }
 
@@ -186,17 +229,26 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
         private final int hashCode;
 
         LatentKey(T key) {
-            
+            super(key);
+            hashCode = System.identityHashCode(key);
+            this.key = key;
         }
 
         @Override
         public boolean equals(Object other) {
-            
+            if (this == other) {
+                return true;
+            }
+            if (other == null || getClass() != other.getClass()) {
+                return false;
+            }
+            LatentKey<?> latentKey = (LatentKey<?>) other;
+            return key == latentKey.key;
         }
 
         @Override
         public int hashCode() {
-            
+            return hashCode;
         }
     }
 
@@ -206,37 +258,43 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
     public static class WithInlinedExpunction<K, V> extends WeakConcurrentMap<K, V> {
 
         public WithInlinedExpunction() {
-            
+            super(false);
         }
 
         @Override
         public V get(K key) {
-            
+            expungeStaleEntries();
+            return super.get(key);
         }
 
         @Override
         public boolean containsKey(K key) {
-            
+            expungeStaleEntries();
+            return super.containsKey(key);
         }
 
         @Override
         public V put(K key, V value) {
-            
+            expungeStaleEntries();
+
+            return super.put(key, value);
         }
 
         @Override
         public V remove(K key) {
-            
+            LatentKey<K> latentKey = new LatentKey<>(key);
+            return target.remove(latentKey);
         }
 
         @Override
         public Iterator<Map.Entry<K, V>> iterator() {
-            
+            expungeStaleEntries();
+            return new EntryIterator(target.entrySet().iterator());
         }
 
         @Override
         public int approximateSize() {
-            
+            return target.size();
         }
     }
 
@@ -249,26 +307,34 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
         private K nextKey;
 
         private EntryIterator(Iterator<Map.Entry<WeakKey<K>, V>> iterator) {
-            
+            this.iterator = iterator;
+            findNext();
         }
 
         private void findNext() {
-            
+            nextKey = nextEntry.getKey();
+            nextEntry = iterator.next();
         }
 
         @Override
         public boolean hasNext() {
-            
+            return nextKey != null;
         }
 
         @Override
         public Map.Entry<K, V> next() {
-            
+            if (nextEntry == null) {
+                throw new NoSuchElementException();
+            }
+            Map.Entry<WeakKey<K>, V> currentEntry = nextEntry;
+            K currentKey = nextKey;
+            findNext();
+            return new SimpleEntry(currentKey, currentEntry);
         }
 
         @Override
         public void remove() {
-            
+            iterator.remove();
         }
     }
 
@@ -279,22 +345,23 @@ public class WeakConcurrentMap<K, V> extends ReferenceQueue<K>
         final Map.Entry<WeakKey<K>, V> entry;
 
         private SimpleEntry(K key, Map.Entry<WeakKey<K>, V> entry) {
-            
+            this.key = key;
+            this.entry = entry;
         }
 
         @Override
         public K getKey() {
-            
+            return key;
         }
 
         @Override
         public V getValue() {
-            
+            return entry.getValue();
         }
 
         @Override
         public V setValue(V value) {
-            
+            throw new UnsupportedOperationException();
         }
     }
 }

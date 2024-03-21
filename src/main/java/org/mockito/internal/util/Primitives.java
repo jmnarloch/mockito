@@ -26,7 +26,7 @@ public final class Primitives {
      * @return The primitive type if relevant, otherwise <code>null</code>
      */
     public static <T> Class<T> primitiveTypeOf(Class<T> clazz) {
-        
+        return clazz.isPrimitive() ? clazz : (Class<T>) PRIMITIVE_TYPES.get(clazz);
     }
 
     /**
@@ -36,11 +36,15 @@ public final class Primitives {
      * @return <code>true</code> if primitive or wrapper, <code>false</code> otherwise.
      */
     public static boolean isPrimitiveOrWrapper(Class<?> type) {
-        
+        return PRIMITIVE_OR_WRAPPER_DEFAULT_VALUES.containsKey(type);
     }
 
     public static boolean isAssignableFromWrapper(Class<?> valueClass, Class<?> referenceType) {
-        
+        if (isPrimitiveOrWrapper(valueClass) && isPrimitiveOrWrapper(referenceType)) {
+            return Primitives.primitiveTypeOf(valueClass)
+            .isAssignableFrom(Primitives.primitiveTypeOf(referenceType));
+        }
+        return false;
     }
 
     /**
@@ -51,7 +55,7 @@ public final class Primitives {
      *         <code>null</code> if the type is neither a primitive nor a wrapper
      */
     public static <T> T defaultValue(Class<T> primitiveOrWrapperType) {
-        
+        return (T) PRIMITIVE_OR_WRAPPER_DEFAULT_VALUES.get(primitiveOrWrapperType);
     }
 
     static {
@@ -85,5 +89,5 @@ public final class Primitives {
         PRIMITIVE_OR_WRAPPER_DEFAULT_VALUES.put(double.class, 0D);
     }
 
-    private Primitives() { }
+    private Primitives() {}
 }

@@ -20,12 +20,25 @@ class MethodHandleProxy implements ProxyRealMethod {
     private final MethodHandles.Lookup lookup;
 
     MethodHandleProxy() throws Throwable {
-        
+        lookup = MethodHandles.lookup();
     }
 
     @Override
     public RealMethod resolve(Object proxy, Method method, Object[] args) {
-        
+        try {
+            return new MethodHandleRealMethod(
+            proxy,
+            lookup.findSpecial(
+            method.getDeclaringClass(),
+            method.getName(),
+            MethodType.methodType(
+            method.getReturnType(), method.getParameterTypes()),
+            method.getDeclaringClass())
+            .bindTo(proxy),
+            args);
+        } catch (Throwable ignored) {
+            return RealMethod.IsIllegal.INSTANCE;
+        }
     }
 
     @SuppressSignatureCheck
@@ -34,12 +47,18 @@ class MethodHandleProxy implements ProxyRealMethod {
         private final Constructor<MethodHandles.Lookup> constructor;
 
         LegacyVersion() throws Throwable {
-            
+            constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+            constructor.setAccessible(true);
         }
 
         @Override
         public RealMethod resolve(Object proxy, Method method, Object[] args) {
-            
+            try {
+                return new MethodHandleRealMethod(
+                constructor.newInstance(proxy.getClass()).unreflectSpecial(method, proxy.getClass()), args);
+            } catch (Throwable t) {
+                return RealMethod.IsIllegal.INSTANCE;
+            }
         }
     }
 
@@ -52,15 +71,18 @@ class MethodHandleProxy implements ProxyRealMethod {
         private final Object[] args;
 
         private MethodHandleRealMethod(MethodHandle handle, Object[] args) {
-            
+            this.handle = handle;
+            this.args = args;
         }
 
         @Override
-        public boolean isInvokable() { }
+        public boolean isInvokable() {
+            return handle != null;
+        }
 
         @Override
         public Object invoke() throws Throwable {
-            
+            return handle.invokeWithArguments(args);
         }
     }
 }

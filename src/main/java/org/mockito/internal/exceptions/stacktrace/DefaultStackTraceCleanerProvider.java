@@ -14,6 +14,6 @@ public class DefaultStackTraceCleanerProvider implements StackTraceCleanerProvid
 
     @Override
     public StackTraceCleaner getStackTraceCleaner(StackTraceCleaner defaultCleaner) {
-        
+        return defaultCleaner;
     }
 }

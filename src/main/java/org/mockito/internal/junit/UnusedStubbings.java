@@ -21,23 +21,41 @@ public class UnusedStubbings {
     private final Collection<? extends Stubbing> unused;
 
     UnusedStubbings(Collection<? extends Stubbing> unused) {
-        
+        this.unused = unused;
     }
 
     void format(String testName, MockitoLogger logger) {
-        
+        if (unused.isEmpty()) {
+            return;
+        }
+
+        StubbingHint hint = new StubbingHint(testName);
+        int x = 1;
+        for (Stubbing candidate : unused) {
+            hint.appendLine(x++, candidate.getInvocation());
+        }
+
+        logger.log(hint.toString());
     }
 
     public int size() {
-        
+        return unused.size();
     }
 
     @Override
     public String toString() {
-        
+        return unused.toString();
     }
 
     void reportUnused() {
-        
+        if (unused.isEmpty()) {
+            return;
+        }
+
+        for (Stubbing notUsed : unused) {
+            notUsed.getInvocation().printInvocLocation();
+        }
+
+        throw Reporter.unncessaryStubbingException(unused);
     }
 }

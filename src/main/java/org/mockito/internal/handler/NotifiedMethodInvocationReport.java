@@ -26,7 +26,9 @@ public class NotifiedMethodInvocationReport implements MethodInvocationReport {
      * @param returnedValue The value returned by the method invocation
      */
     public NotifiedMethodInvocationReport(Invocation invocation, Object returnedValue) {
-        
+        this.invocation = invocation;
+        this.returnedValue = returnedValue;
+        this.throwable = null;
     }
 
     /**
@@ -37,41 +39,57 @@ public class NotifiedMethodInvocationReport implements MethodInvocationReport {
      * @param throwable Tha throwable raised by the method invocation
      */
     public NotifiedMethodInvocationReport(Invocation invocation, Throwable throwable) {
-        
+        this.invocation = invocation;
+        this.returnedValue = null;
+        this.throwable = throwable;
     }
 
     @Override
     public DescribedInvocation getInvocation() {
-        
+        return invocation;
     }
 
     @Override
     public Object getReturnedValue() {
-        
+        return returnedValue;
     }
 
     @Override
     public Throwable getThrowable() {
-        
+        return throwable;
     }
 
     @Override
     public boolean threwException() {
-        
+        return throwable != null;
     }
 
     @Override
     public String getLocationOfStubbing() {
-        
+        return (invocation.stubInfo() == null)
+        ? null
+        : invocation.stubInfo().stubbedAt().toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        NotifiedMethodInvocationReport that = (NotifiedMethodInvocationReport) o;
+
+        return areEqual(invocation, that.invocation);
     }
 
     @Override
     public int hashCode() {
-        
+        int result = invocation != null ? invocation.hashCode() : 0;
+        result = 31 * result + (returnedValue != null ? returnedValue.hashCode() : 0);
+        result = 31 * result + (throwable != null ? throwable.hashCode() : 0);
+        return result;
     }
 }

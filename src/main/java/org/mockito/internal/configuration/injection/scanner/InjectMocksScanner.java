@@ -27,7 +27,7 @@ public class InjectMocksScanner {
      * @param clazz    Current class in the hierarchy of the test
      */
     public InjectMocksScanner(Class<?> clazz) {
-        
+        this.clazz = clazz;
     }
 
     /**
@@ -36,7 +36,7 @@ public class InjectMocksScanner {
      * @param mockDependentFields Set of fields annotated by  @{@link InjectMocks}
      */
     public void addTo(Set<Field> mockDependentFields) {
-        
+        mockDependentFields.addAll(scan());
     }
 
     /**
@@ -46,11 +46,25 @@ public class InjectMocksScanner {
      */
     @SuppressWarnings("unchecked")
     private Set<Field> scan() {
-        
+        Set<Field> mockDependentFields = new HashSet<>();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            if (null != field.getAnnotation(InjectMocks.class)) {
+                assertNoAnnotations(field, Mock.class, Captor.class);
+                mockDependentFields.add(field);
+            }
+        }
+
+        return mockDependentFields;
     }
 
     private static void assertNoAnnotations(
             Field field, Class<? extends Annotation>... annotations) {
-        
+        for (Class<? extends Annotation> annotation : annotations) {
+            if (field.isAnnotationPresent(annotation)) {
+                throw unsupportedCombinationOfAnnotations(
+                annotation.getSimpleName(), InjectMocks.class.getSimpleName());
+            }
+        }
     }
 }

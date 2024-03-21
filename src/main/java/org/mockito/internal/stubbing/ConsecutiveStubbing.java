@@ -12,11 +12,10 @@ public class ConsecutiveStubbing<T> extends BaseStubbing<T> {
     private final InvocationContainerImpl invocationContainer;
 
     ConsecutiveStubbing(InvocationContainerImpl invocationContainer) {
-        
+        super(invocationContainer);
+        this.invocationContainer = invocationjsonImplocationContainer;
     }
 
     @Override
-    public OngoingStubbing<T> thenAnswer(Answer<?> answer) {
-        
-    }
+    public OngoingStubbing<T> thenAnswer(Answer<?> answer) {}
 }

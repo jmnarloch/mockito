@@ -36,28 +36,70 @@ public class IndependentAnnotationEngine implements AnnotationEngine {
             annotationProcessorMap = new HashMap<>();
 
     public IndependentAnnotationEngine() {
-        
+        registerAnnotationProcessor(Mock.class, new MockAnnotationProcessor());
+        registerAnnotationProcessor(Captor.class, new CaptorAnnotationProcessor());
     }
 
     private Object createMockFor(Annotation annotation, Field field) {
-        
+        return forAnnotation(annotation).process(annotation, field);
     }
 
     private <A extends Annotation> FieldAnnotationProcessor<A> forAnnotation(A annotation) {
-        
+        if (annotationProcessorMap.containsKey(annotation.annotationType())) {
+            return (FieldAnnotationProcessor<A>)
+            annotationProcessorMap.get(annotation.annotationType());
+        }
+        return new FieldAnnotationProcessor<A>() {
+
+            @Override
+            public A mockAnnotationAt(Field field) {
+                return null;
+            }
+
+            @Override
+            public Object process(Field field, A mockAnnotation, Object testInstance) {
+                return null;
+            }
+        };
     }
 
     private <A extends Annotation> void registerAnnotationProcessor(
             Class<A> annotationClass, FieldAnnotationProcessor<A> fieldAnnotationProcessor) {
-        
+        annotationProcessorMap.put(annotationClass, fieldAnnotationProcessor);
     }
 
     @Override
     public AutoCloseable process(Class<?> clazz, Object testInstance) {
-        
+        List<ScopedMock> scopedMocks = new ArrayList<>();
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            boolean alreadyAssigned = false;
+            for (FieldAnnotationProcessor<?> processor : annotationProcessorMap.values()) {
+                if (processor.isProcessed(field)) {
+                    alreadyAssigned = true;
+                }
+            }
+            if (!alreadyAssigned) {
+                for (FieldAnnotationProcessor<?> processor : annotationProcessorMap.values()) {
+                    if (processor.supports(field)) {
+                        Object processed = processor.process(field);
+                        if (processed != null) {
+                            scopedMocks.add(() -> processor.resetMock(processed));
+                        }
+                    }
+                }
+            }
+        }
+        return () -> {
+            for (ScopedMock scopedMock : scopedMocks) {
+                scopedMock.close();
+            }
+        };
     }
 
     void throwIfAlreadyAssigned(Field field, boolean alreadyAssigned) {
-        
+        if (alreadyAssigned) {
+            throw moreThanOneAnnotationNotAllowed(field.getName());
+        }
     }
 }

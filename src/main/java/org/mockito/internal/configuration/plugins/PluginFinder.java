@@ -18,14 +18,46 @@ class PluginFinder {
     private final PluginSwitch pluginSwitch;
 
     public PluginFinder(PluginSwitch pluginSwitch) {
-        
+        this.pluginSwitch = pluginSwitch;
     }
 
     String findPluginClass(Iterable<URL> resources) {
-        
+        for (URL resource : resources) {
+            InputStream s = null;
+            try {
+                s = resource.openStream();
+                return new PluginFileReader().readPluginClass(s);
+            } catch (Exception e) {
+                // Do nothing. If this resource is not a plugin file we should just ignore it
+            } finally {
+                IOUtil.closeQuietly(s);
+            }
+        }
+        return null;
     }
 
     List<String> findPluginClasses(Iterable<URL> resources) {
-        
+        List<String> pluginClassNames = new ArrayList<>();
+        for (URL resource : resources) {
+            InputStream is = null;
+            try {
+                is = resource.openStream();
+                String pluginClassName = new PluginFileReader().readPluginClass(is);
+                if (pluginClassName == null) {
+                    // For backwards compatibility
+                    continue;
+                }
+                if (!pluginSwitch.isEnabled(pluginClassName)) {
+                    continue;
+                }
+                pluginClassNames.add(pluginClassName);
+            } catch (Exception e) {
+                throw new MockitoException(
+                "Problems reading plugin implementation from: " + resource, e);
+            } finally {
+                IOUtil.closeQuietly(is);
+            }
+        }
+        return pluginClassNames;
     }
 }

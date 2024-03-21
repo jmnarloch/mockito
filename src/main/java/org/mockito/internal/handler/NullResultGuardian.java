@@ -21,21 +21,27 @@ class NullResultGuardian<T> implements MockHandler<T> {
     private final MockHandler<T> delegate;
 
     public NullResultGuardian(MockHandler<T> delegate) {
-        
+        this.delegate = delegate;
     }
 
     @Override
     public Object handle(Invocation invocation) throws Throwable {
-        
+        Object result = delegate.handle(invocation);
+        Class<?> returnType = invocation.getMethod().getReturnType();
+        if (result == null && returnType.isPrimitive()) {
+            // primitive values cannot be null
+            return defaultValue(returnType);
+        }
+        return result;
     }
 
     @Override
     public MockCreationSettings<T> getMockSettings() {
-        
+        return delegate.getMockSettings();
     }
 
     @Override
     public InvocationContainer getInvocationContainer() {
-        
+        return delegate.getInvocationContainer();
     }
 }

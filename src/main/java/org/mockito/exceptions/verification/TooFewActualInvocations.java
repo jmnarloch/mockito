@@ -14,6 +14,6 @@ public class TooFewActualInvocations extends MockitoAssertionError {
     private static final long serialVersionUID = 1L;
 
     public TooFewActualInvocations(String message) {
-        
+        super(message);
     }
 }

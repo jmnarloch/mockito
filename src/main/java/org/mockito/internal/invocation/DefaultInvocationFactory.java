@@ -24,7 +24,8 @@ public class DefaultInvocationFactory implements InvocationFactory {
             Method method,
             final Callable realMethod,
             Object... args) {
-        
+        RealMethod superMethod = new RealMethod.FromCallable(realMethod);
+        return createInvocation(target, settings, method, superMethod, args);
     }
 
     @Override
@@ -34,7 +35,8 @@ public class DefaultInvocationFactory implements InvocationFactory {
             Method method,
             RealMethodBehavior realMethod,
             Object... args) {
-        
+        RealMethod superMethod = new RealMethod.FromBehavior(realMethod);
+        return createInvocation(target, settings, method, superMethod, args);
     }
 
     private Invocation createInvocation(
@@ -43,7 +45,7 @@ public class DefaultInvocationFactory implements InvocationFactory {
             Method method,
             RealMethod superMethod,
             Object[] args) {
-        
+        return createInvocation(target, method, args, superMethod, settings);
     }
 
     public static InterceptedInvocation createInvocation(
@@ -53,7 +55,12 @@ public class DefaultInvocationFactory implements InvocationFactory {
             RealMethod realMethod,
             MockCreationSettings settings,
             Location location) {
-        
+        return new InterceptedInvocation(
+        new MockWeakReference<Object>(mock),
+        createMockitoMethod(invokedMethod, settings),
+        arguments,
+        location,
+        realMethod);
     }
 
     private static InterceptedInvocation createInvocation(
@@ -62,10 +69,15 @@ public class DefaultInvocationFactory implements InvocationFactory {
             Object[] arguments,
             RealMethod realMethod,
             MockCreationSettings settings) {
-        
+        return createInvocation(
+        mock, invokedMethod, arguments, realMethod, settings, LocationFactory.create());
     }
 
     private static MockitoMethod createMockitoMethod(Method method, MockCreationSettings settings) {
-        
+        if (settings.isSerializable()) {
+            return new SerializableMethod(method);
+        } else {
+            return new DelegatingMethod(method);
+        }
     }
 }

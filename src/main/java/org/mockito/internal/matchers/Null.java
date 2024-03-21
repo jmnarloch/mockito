@@ -15,19 +15,21 @@ public class Null<T> implements ArgumentMatcher<T>, Serializable {
     private final Class<T> type;
 
     public Null(Class<T> type) {
-        
+        this.type = Objects.requireNonNull(type);
     }
 
     @Override
     public boolean matches(Object actual) {
-        
+        return actual == null;
     }
 
     @Override
     public Class<T> type() {
-        
+        return type;
     }
 
     @Override
-    public String toString() { }
+    public String toString() {
+        return "isNull()";
+    }
 }

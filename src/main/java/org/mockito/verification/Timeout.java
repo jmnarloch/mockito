@@ -26,45 +26,49 @@ public class Timeout extends VerificationWrapper<VerificationOverTimeImpl>
      * See javadoc for {@link VerificationWithTimeout}
      */
     public Timeout(long millis, VerificationMode delegate) {
-        
+        this(10, millis, delegate);
     }
 
     /**
      * See the javadoc for {@link VerificationWithTimeout}
      */
     Timeout(long pollingPeriodMillis, long millis, VerificationMode delegate) {
-        
+        this(new VerificationOverTimeImpl(pollingPeriodMillis, millis, delegate, true));
     }
 
     /**
      * See the javadoc for {@link VerificationWithTimeout}
      */
     Timeout(long pollingPeriodMillis, VerificationMode delegate, Timer timer) {
-        
+        this(new VerificationOverTimeImpl(pollingPeriodMillis, delegate, true, timer));
     }
 
     Timeout(VerificationOverTimeImpl verificationOverTime) {
-        
+        super(verificationOverTime);
     }
 
     @Override
     protected VerificationMode copySelfWithNewVerificationMode(
             VerificationMode newVerificationMode) {
-        
+        return new Timeout(newVerificationMode, millis, false, timer);
     }
 
     @Override
     public VerificationMode atMost(int maxNumberOfInvocations) {
-        
+        throw atMostAndNeverShouldNotBeUsedWithTimeout();
     }
 
     @Override
     public VerificationMode never() {
-        
+        throw atMostAndNeverShouldNotBeUsedWithTimeout();
     }
 
     @Override
     public String toString() {
-        
+        return "Wanted after at most "
+        + wrappedVerification.getTimer().duration()
+        + " ms: ["
+        + wrappedVerification.getDelegate()
+        + "]";
     }
 }

@@ -21,18 +21,26 @@ public interface RealMethod extends Serializable {
         INSTANCE;
 
         @Override
-        public boolean isInvokable() { }
+        public boolean isInvokable() {
+        return false;
+    }
 
         @Override
         public Object invoke() {
-            
-        }
+        return null;
+    }
     }
 
     class FromCallable extends FromBehavior implements RealMethod {
         public FromCallable(final Callable<?> callable) {
-            
-        }
+        super(
+        new InvocationFactory.RealMethodBehavior() {
+            @Override
+            public Object call() throws Throwable {
+                return callable.call();
+            }
+        });
+    }
     }
 
     class FromBehavior implements RealMethod {
@@ -40,16 +48,23 @@ public interface RealMethod extends Serializable {
         private final InvocationFactory.RealMethodBehavior<?> behavior;
 
         FromBehavior(InvocationFactory.RealMethodBehavior<?> behavior) {
-            
-        }
+        this.behavior = behavior;
+    }
 
         @Override
-        public boolean isInvokable() { }
+        public boolean isInvokable() {
+        return false;
+    }
 
         @Override
         public Object invoke() throws Throwable {
-            
+        try {
+            return behavior.call();
+        } catch (Throwable t) {
+            new ConditionalStackTraceFilter().filter(t);
+            throw t;
         }
+    }
     }
 
     boolean isInvokable();

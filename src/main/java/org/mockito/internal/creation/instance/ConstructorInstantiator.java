@@ -30,16 +30,34 @@ public class ConstructorInstantiator implements Instantiator {
     private final Object[] constructorArgs;
 
     public ConstructorInstantiator(boolean hasOuterClassInstance, Object... constructorArgs) {
-        
+        this.hasOuterClassInstance = hasOuterClassInstance;
+        this.constructorArgs = constructorArgs;
     }
 
     @Override
     public <T> T newInstance(Class<T> cls) {
-        
+        if (hasOuterClassInstance) {
+            return withParams(cls, Arrays.copyOfRange(constructorArgs, 1, constructorArgs.length));
+        }
+        return withParams(cls, constructorArgs);
     }
 
     private <T> T withParams(Class<T> cls, Object... params) {
-        
+        List<Constructor<?>> matchingConstructors = new LinkedList<>();
+        for (Constructor<?> constructor : cls.getDeclaredConstructors()) {
+            Class<?>[] types = constructor.getParameterTypes();
+            if (paramsMatch(types, params)) {
+                evaluateConstructor(matchingConstructors, constructor);
+            }
+        }
+        if (matchingConstructors.size() == 1) {
+            //noinspection unchecked
+            return (T) invokeConstructor(matchingConstructors.get(0), params);
+        }
+        if (matchingConstructors.isEmpty()) {
+            throw noMatchingConstructor(cls);
+        }
+        throw multipleMatchingConstructors(cls, matchingConstructors);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,32 +65,100 @@ public class ConstructorInstantiator implements Instantiator {
             throws java.lang.InstantiationException,
                     IllegalAccessException,
                     InvocationTargetException {
-        
+        MemberAccessor accessor = Plugins.getMemberAccessor();
+        constructor.setAccessible(true);
+        try {
+            return (T) accessor.newInstance(constructor, params);
+        } catch (InvocationTargetException
+        | InstantiationException
+        | IllegalAccessException
+        | IllegalArgumentException e) {
+            throw e;
+        } finally {
+            constructor.setAccessible(false);
+        }
     }
 
     private InstantiationException paramsException(Class<?> cls, Exception e) {
-        
+        return new InstantiationException(
+        join(
+        "Unable to create instance of '" + cls.getSimpleName() + "'.",
+        "Please ensure the target class has "
+        + constructorArgsString()
+        + " and executes cleanly."),
+        e);
     }
 
     private String constructorArgTypes() {
-        
+        StringBuilder argTypes = new StringBuilder();
+        for (Object arg : constructorArgs) {
+            argTypes.append(arg == null ? "null" : arg.getClass().getName()).append(", ");
+        }
+        if (argTypes.length() > 0) {
+            argTypes.setLength(argTypes.length() - 2);
+        }
+        return argTypes.toString();
     }
 
     private InstantiationException noMatchingConstructor(Class<?> cls) {
-        
+        String outerOrEmpty = hasOuterClassInstance ? " (whilst outer object was provided)" : "";
+        return new InstantiationException(
+        join(
+        "Unable to create instance of '" + cls.getCanonicalName() + outerOrEmpty + "'.",
+        "",
+        "No suitable constructor found for class " + cls + ".",
+        "Requested constructor is not available.",
+        "The following constructors are applicable...",
+        constructorArgTypes(),
+        "...but their parameters do not match those requested...",
+        constructorArgsString(),
+        "Consider specifying parameters or omitting parameters with @Inject.",
+        ""),
+        null);
     }
 
     private String constructorArgsString() {
-        
+        String constructorString;
+        if (constructorArgs.length == 0 || (hasOuterClassInstance && constructorArgs.length == 1)) {
+            constructorString = "a 0-arg constructor";
+        } else {
+            constructorString = "a constructor that matches these argument types: " + constructorArgTypes();
+        }
+        return constructorString;
     }
 
     private InstantiationException multipleMatchingConstructors(
             Class<?> cls, List<Constructor<?>> constructors) {
-        
+        return new InstantiationException(
+        join(
+        "Unable to create instance of '" + cls.getSimpleName() + "'",
+        "Multiple constructors could be matched to arguments of types "
+        + constructorArgTypes()
+        + ":",
+        join("", " - ", constructors),
+        "If you believe that Mockito could do a better job deciding "
+        + "which constructor to use, please let us know ().
+        + "Be aware that we do not support spying on a real instance with matching leaf "
+        + "constructor for deep hierarchy chains."),
+        "");
     }
 
     private static boolean paramsMatch(Class<?>[] types, Object[] params) {
-        
+        if (params.length != types.length) {
+            return false;
+        }
+        for (int i = 0; i < params.length; i++) {
+            if (params[i] == null) {
+                if (types[i].isPrimitive()) {
+                    return false;
+                }
+            } else if ((!types[i].isPrimitive() && !types[i].isInstance(params[i]))
+            || (types[i].isPrimitive()
+            && !types[i].equals(Primitives.unbox(params[i].getClass())))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -100,6 +186,46 @@ public class ConstructorInstantiator implements Instantiator {
      */
     private void evaluateConstructor(
             List<Constructor<?>> matchingConstructors, Constructor<?> constructor) {
-        
+        boolean isBetterMatch = true;
+        for (int i = 0, constructorCount = constructor.getParameterTypes().length;
+        i < constructorCount;
+        i++) {
+            if (isBetterMatch) {
+                Class<?>[] constructorParams = constructor.getParameterTypes();
+                Class<?>[] existingParams =
+                matchingConstructors.get(0).getParameterTypes(); // 0th, as we know there
+                // is at least one
+
+                if (constructorParams[i].isAssignableFrom(existingParams[i])) {
+                    // Ok, good so far
+                } else {
+                    // Uh-oh, current constructor is not a better match than the previous best
+                    // matching one
+                    isBetterMatch = false;
+
+                    // Let's check if the current constructor is an equivalently good match as the
+                    // previous one
+                    for (int m = 1, matchingCount = matchingConstructors.size();
+                    m < matchingCount;
+                    m++) {
+                        if (matchingConstructors
+                        .get(m)
+                        .getParameterTypes()[i]
+                        .isAssignableFrom(existingParams[i])) {
+                            // Yup, current constructor is an equivalently good match as the
+                            // previous best matching one
+                            isBetterMatch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (isBetterMatch) {
+            matchingConstructors.clear();
+        }
+        if (isBetterMatch || !matchingConstructors.contains(constructor)) {
+            matchingConstructors.add(constructor);
+        }
     }
 }

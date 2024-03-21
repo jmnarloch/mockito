@@ -22,26 +22,40 @@ public class Times implements VerificationInOrderMode, VerificationMode {
     final int wantedCount;
 
     public Times(int wantedNumberOfInvocations) {
-        
+        if (wantedNumberOfInvocations < 0) {
+            throw new MockitoException("Negative value is not allowed here");
+        }
+        this.wantedCount = wantedNumberOfInvocations;
     }
 
     @Override
     public void verify(VerificationData data) {
-        
+        List<Invocation> invocations = data.getAllInvocations();
+        if (wantedCount > 0) {
+            checkMissingInvocation(data.getAllInvocations(), data.getTarget());
+        }
+        checkNumberOfInvocations(invocations, data.getTarget(), wantedCount);
     }
 
     @Override
     public void verifyInOrder(VerificationDataInOrder data) {
-        
+        List<Invocation> allInvocations = data.getAllInvocations();
+        MatchableInvocation wanted = data.getWanted();
+
+        if (wantedCount > 0) {
+            checkMissingInvocation(allInvocations, wanted, data.getOrderingContext());
+        }
+        checkNumberOfInvocations(
+        allInvocations, wanted, wantedCount, data.getOrderingContext().timesMode());
     }
 
     @Override
     public String toString() {
-        
+        return "Wanted invocations count: " + wantedCount;
     }
 
     @Override
     public VerificationMode description(String description) {
-        
+        return VerificationModeFactory.description(this, description);
     }
 }

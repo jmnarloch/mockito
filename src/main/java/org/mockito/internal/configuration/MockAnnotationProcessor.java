@@ -25,16 +25,63 @@ import org.mockito.quality.Strictness;
 public class MockAnnotationProcessor implements FieldAnnotationProcessor<Mock> {
     @Override
     public Object process(Mock annotation, Field field) {
-        
+        return processAnnotationForMock(
+        annotation, field.getType(), field::getGenericType, field.getName());
     }
 
     @SuppressWarnings("deprecation")
     public static Object processAnnotationForMock(
             Mock annotation, Class<?> type, Supplier<Type> genericType, String name) {
-        
+        MockSettings mockSettings = Mockito.withSettings();
+        if (annotation.extraInterfaces().length > 0) {
+            mockSettings.extraInterfaces(annotation.extraInterfaces());
+        }
+        if (annotation.serializable()) {
+            mockSettings.serializable();
+        }
+        if (!annotation.lenient().equals(Mockito.RETURNS_DEFAULTS)) {
+            mockSettings.defaultAnswer(annotation.lenient());
+        }
+        if (annotation.stubOnly()) {
+            mockSettings.stubOnly();
+        }
+        if (!annotation.name().isEmpty()) {
+            mockSettings.name(annotation.name());
+        }
+        if (annotation.mockMaker() != MockMakerType.CGLIB) {
+            mockSettings.mockMaker(new MockMakerTypeService().getMockMaker(annotation));
+        }
+        if (annotation.withSettings() != Mock.WithSettings.class) {
+            mockSettings.withSettings().spiedInstance(annotation.withSettings().spiedInstance());
+        }
+        mockSettings = mockSettings.proxyTarget(annotation.proxyTarget());
+        if (type == MockedConstruction.class) {
+            return Mockito.mockConstruction(
+            (Class<?>) genericType.get(), (MockSettings) mockSettings, name);
+        } else if (type == MockedStatic.class) {
+            return Mockito.mockStatic(
+            (Class<?>) genericType.get(), (MockSettings) mockSettings, name);
+        } else {
+            return Mockito.mock(type, mockSettings, name);
+        }
     }
 
     static Class<?> inferParameterizedType(Type type, String name, String sort) {
-        
+        if (type instanceof ParameterizedType) {
+            Type genericType = ((ParameterizedType) type).getActualTypeArguments()[0];
+            if (genericType instanceof Class) {
+                return (Class<?>) genericType;
+            }
+        }
+        throw new MockitoException(
+        join(
+        "Mockito cannot instantiate mock for " + name + " " + sort + ".",
+        "",
+        "You should provide the required type using @Mock annotation on the field.",
+        "Examples of correct usage of @Mock annotation:",
+        "    @Mock List<String> mock;",
+        "    @Mock(name = \"someX\") List<String> x;",
+        "",
+        "    at " + name + "." + name + "(" + name + ".java:1)"));
     }
 }

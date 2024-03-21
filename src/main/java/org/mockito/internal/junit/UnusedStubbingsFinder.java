@@ -26,7 +26,10 @@ public class UnusedStubbingsFinder {
      * Stubbings explicitily marked as LENIENT are not included.
      */
     public UnusedStubbings getUnusedStubbings(Iterable<Object> mocks) {
-        
+        return new UnusedStubbings(
+        AllInvocationsFinder.findStubbings(mocks).stream()
+        .filter(UnusedStubbingReporting::shouldBeReported)
+        .collect(Collectors.toList()));
     }
 
     /**
@@ -40,6 +43,14 @@ public class UnusedStubbingsFinder {
      * There are high level unit tests that demonstrate this scenario.
      */
     public Collection<Invocation> getUnusedStubbingsByLocation(Iterable<Object> mocks) {
-        
+        Set<Stubbing> stubbings = UnusedStubbingReporting.stubbingsByLocation(mocks);
+
+        Map<String, Invocation> allLocations =
+        AllInvocationsFinder.findStubbings(mocks).stream()
+        .collect(Collectors.toMap(UnusedStubbingsFinder::getLocation, s -> s));
+
+        return stubbings.stream()
+        .filter(s -> !allLocations.containsKey(getLocation(s))))
+        .collect(Collectors.toList());
     }
 }

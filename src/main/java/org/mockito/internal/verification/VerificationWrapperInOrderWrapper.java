@@ -15,18 +15,22 @@ public class VerificationWrapperInOrderWrapper implements VerificationMode {
 
     public VerificationWrapperInOrderWrapper(
             VerificationWrapper<?> verificationWrapper, InOrderImpl inOrder) {
-        
+        VerificationMode verificationMode = verificationWrapper.wrappedVerification;
+
+        VerificationMode inOrderWrappedVerificationMode = wrapInOrder(verificationWrapper, verificationMode, inOrder);
+
+        delegate = verificationWrapper.wrapee.replaceVerification(inOrderWrappedVerificationMode, verificationMode);
     }
 
     @Override
     public void verify(VerificationData data) {
-        
+        delegate.verify(data);
     }
 
     private VerificationMode wrapInOrder(
             VerificationWrapper<?> verificationWrapper,
             VerificationMode verificationMode,
             InOrderImpl inOrder) {
-        
+        return new InOrderWrapper(verificationMode, inOrder);
     }
 }

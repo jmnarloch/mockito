@@ -105,7 +105,7 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class Silent extends MockitoJUnitRunner {
         public Silent(Class<?> klass) throws InvocationTargetException {
-            
+            super(klass);
         }
     }
 
@@ -120,7 +120,7 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class Strict extends MockitoJUnitRunner {
         public Strict(Class<?> klass) throws InvocationTargetException {
-            
+            super(klass);
         }
     }
 
@@ -142,35 +142,41 @@ public class MockitoJUnitRunner extends Runner implements Filterable {
      */
     public static class StrictStubs extends MockitoJUnitRunner {
         public StrictStubs(Class<?> klass) throws InvocationTargetException {
-            
+            super(klass);
         }
     }
 
     private final InternalRunner runner;
 
     public MockitoJUnitRunner(Class<?> klass) throws InvocationTargetException {
-        // by default, StrictRunner is used. We can change that potentially based on feedback from
-        // users
-        
+        runner = new RunnerFactory().createStrict(klass);
     }
 
     MockitoJUnitRunner(InternalRunner runner) {
-        
+        this.runner = runner;
     }
 
     @Override
     public void run(final RunNotifier notifier) {
-        
+        MockitoSession session = runner.startSession();
+        Description description = getDescription();
+        try {
+            session.finishMocking(
+            new RunNotifierListener(notifier, description), description.getDisplayName());
+        } catch (UnnecessaryStubbingException e) {
+            String message =
+            e.getMessage() + "\n  You can clean this violation with the @ExtendWith";
+            throw new UnnecessaryStubbingException(message, e);
+        }
     }
 
     @Override
     public Description getDescription() {
-        
+        return runner.getDescription();
     }
 
     @Override
     public void filter(Filter filter) throws NoTestsRemainException {
-        // filter is required because without it UnrootedTests show up in Eclipse
-        
+        runner.filter(filter);
     }
 }

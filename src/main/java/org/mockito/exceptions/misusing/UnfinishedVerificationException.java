@@ -11,6 +11,6 @@ public class UnfinishedVerificationException extends MockitoException {
     private static final long serialVersionUID = 1L;
 
     public UnfinishedVerificationException(String message) {
-        
+        super(message);
     }
 }

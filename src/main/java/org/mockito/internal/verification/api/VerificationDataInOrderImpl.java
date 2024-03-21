@@ -17,21 +17,23 @@ public class VerificationDataInOrderImpl implements VerificationDataInOrder {
 
     public VerificationDataInOrderImpl(
             InOrderContext inOrder, List<Invocation> allInvocations, MatchableInvocation wanted) {
-        
+        this.inOrder = inOrder;
+        this.allInvocations = allInvocations;
+        this.wanted = wanted;
     }
 
     @Override
     public List<Invocation> getAllInvocations() {
-        
+        return allInvocations;
     }
 
     @Override
     public InOrderContext getOrderingContext() {
-        
+        return inOrder;
     }
 
     @Override
     public MatchableInvocation getWanted() {
-        
+        return wanted;
     }
 }

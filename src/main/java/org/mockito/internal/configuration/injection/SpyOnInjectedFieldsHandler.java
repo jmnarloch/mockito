@@ -31,6 +31,43 @@ public class SpyOnInjectedFieldsHandler extends MockInjectionStrategy {
 
     @Override
     protected boolean processInjection(Field field, Object fieldOwner, Set<Object> mockCandidates) {
-        
+        FieldReader fieldReader = new FieldReader(fieldOwner, field);
+
+        // issue 2031 - prefer constructor mock to avoid partial mock
+        if (fieldReader.isNull() && !mockCandidates.isEmpty()) {
+            Object candidate = mockCandidates.iterator().next();
+            if (MockUtil.isMock(candidate)) {
+                try {
+                    Object spiedInstance =
+                    Mockito.mock(
+                    field.getType(),
+                    withSettings()
+                    .spiedInstance(candidate)
+                    .defaultAnswer(Mockito.CALLS_REAL_METHODS)
+                    .name(field.getName()));
+                    accessor.set(field, fieldOwner, spiedInstance);
+                } catch (Exception e) {
+                    throw new MockitoException(
+                    "Problems initiating spied field " + field.getName(), e);
+                }
+            }
+        }
+
+        if (!fieldReader.isNull()) {
+            // at this point we have a mock instance to be spied
+            // no verifyNoInteractions(), not marking verified(), not stripping MockitoLogger
+            // since this is a stubbing mock made to be spied on
+            Object instance =
+            Mockito.mock(
+            field.getType(),
+            withSettings()
+            .spiedInstance(fieldReader.read())
+            .name(field.getName())
+            .defaultAnswer(Mockito.CALLS_REAL_METHODS));
+            accessor.set(field, fieldOwner, instance);
+            return true;
+        }
+
+        return false;
     }
 }

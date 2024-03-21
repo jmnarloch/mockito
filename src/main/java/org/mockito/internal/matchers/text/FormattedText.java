@@ -13,10 +13,10 @@ class FormattedText {
     private final String text;
 
     public FormattedText(String text) {
-        
+        this.text = text;
     }
 
     public String getText() {
-        
+        return text;
     }
 }

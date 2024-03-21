@@ -24,29 +24,51 @@ class InvocationNotifierHandler<T> implements MockHandler<T> {
     private final MockHandler<T> mockHandler;
 
     public InvocationNotifierHandler(MockHandler<T> mockHandler, MockCreationSettings<T> settings) {
-        
+        this.mockHandler = mockHandler;
+        this.invocationListeners = settings.getInvocationListeners();
     }
 
     @Override
     public Object handle(Invocation invocation) throws Throwable {
-        
+        try {
+            Object returnedValue = mockHandler.handle(invocation);
+            notifyMethodCall(invocation, returnedValue);
+            return returnedValue;
+        } catch (Throwable t) {
+            notifyMethodCallException(invocation, t);
+            throw t;
+        }
     }
 
     private void notifyMethodCall(Invocation invocation, Object returnValue) {
-        
+        for (InvocationListener listener : invocationListeners) {
+            try {
+                listener.reportInvocation(
+                new NotifiedMethodInvocationReport(invocation, returnValue));
+            } catch (Throwable listenerThrowable) {
+                throw invocationListenerThrewException(listener, listenerThrowable);
+            }
+        }
     }
 
     private void notifyMethodCallException(Invocation invocation, Throwable exception) {
-        
+        for (InvocationListener listener : invocationListeners) {
+            try {
+                listener.reportInvocation(
+                new NotifiedMethodInvocationReport(invocation, exception));
+            } catch (Throwable e) {
+                throw invocationListenerThrewException(e);
+            }
+        }
     }
 
     @Override
     public MockCreationSettings<T> getMockSettings() {
-        
+        return mockHandler.getMockSettings();
     }
 
     @Override
     public InvocationContainer getInvocationContainer() {
-        
+        return mockHandler.getInvocationContainer();
     }
 }

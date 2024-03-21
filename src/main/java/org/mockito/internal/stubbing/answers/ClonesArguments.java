@@ -18,6 +18,21 @@ import org.mockito.stubbing.Answer;
 public class ClonesArguments implements Answer<Object> {
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
-        
+        Object[] arguments = invocation.getArgumentAt(0, Object[].class);
+
+        if (arguments == null) {
+            return null;
+        }
+
+        if (arguments.length == 0) {
+            return arguments;
+        }
+
+        Object[] newInstance = (Object[]) Array.newInstance(arguments[0].getClass(), 1);
+
+        Instantiator instantiator = Plugins.getInstantiatorProvider().getInstantiator(null);
+        Array.set(newInstance, 0, new LenientCopyTool().copyToDifferentInstance(arguments[0], instantiator));
+
+        return newInstance;
     }
 }

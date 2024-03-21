@@ -47,7 +47,13 @@ public class ReturnsSmartNulls implements Answer<Object>, Serializable {
 
     @Override
     public Object answer(final InvocationOnMock invocation) throws Throwable {
-        
+        Object defaultReturnValue = delegate.answer(invocation);
+
+        if (defaultReturnValue != null) {
+            return defaultReturnValue;
+        }
+
+        return ToNullImpl.INSTANCE.answer(invocation);
     }
 
     private static class ThrowsSmartNullPointer implements Answer {
@@ -57,16 +63,39 @@ public class ReturnsSmartNulls implements Answer<Object>, Serializable {
         private final Location location;
 
         ThrowsSmartNullPointer(InvocationOnMock unstubbedInvocation, Location location) {
-            
+            this.unstubbedInvocation = unstubbedInvocation;
+            this.location = location;
         }
 
         @Override
         public Object answer(InvocationOnMock currentInvocation) throws Throwable {
-            
+            if (isMethodOf(
+            unstubbedInvocation.getMock().getClass(),
+            unstubbedInvocation.getMock(),
+            currentInvocation.getMethod())) {
+                Location selfLocation = LocationFactory.create();
+                throw smartNullPointerException(
+                "you're invoking "
+                + currentInvocation.getMethod()
+                + " on "
+                + unstubbedInvocation.getMock()
+                + " with arguments passed to "
+                + unstubbedInvocation.getLocation())
+                .addHint(
+                "if you don't treat nulls, assert with assertNull() instead.")
+                .setSelf(selfLocation)
+                .setActual(location);
+            }
+            throw smartNullPointerException(currentInvocation.getMock(), location);
         }
 
         private static boolean isMethodOf(Class<?> clazz, Object instance, Method method) {
-            
+            if (method.getDeclaringClass() != clazz) {
+                return false;
+            }
+            return !method.isBridge() || instance.getClass().getDeclaredMethod(
+            method.getName(),
+            method.getParameterTypes()).isBridge();
         }
     }
 }

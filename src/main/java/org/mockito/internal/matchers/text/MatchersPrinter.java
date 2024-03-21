@@ -16,15 +16,18 @@ import org.mockito.internal.reporting.PrintSettings;
 public class MatchersPrinter {
 
     public String getArgumentsLine(List<ArgumentMatcher> matchers, PrintSettings printSettings) {
-        
+        Iterator args = applyPrintSettings(matchers, printSettings);
+        return ValuePrinter.printValues("(", ", ", ");", args);
     }
 
     public String getArgumentsBlock(List<ArgumentMatcher> matchers, PrintSettings printSettings) {
-        
+        Iterator args = applyPrintSettings(matchers, printSettings);
+        return ValuePrinter.printValues("(\n    ", ",\n    ", "\n);", args);
     }
 
     private Iterator<FormattedText> applyPrintSettings(
             List<ArgumentMatcher> matchers, PrintSettings printSettings) {
-        
+        return new FormattedMatcherIterator(
+        matchers, new LinkedList<>(matchers).iterator(), printSettings, this);
     }
 }

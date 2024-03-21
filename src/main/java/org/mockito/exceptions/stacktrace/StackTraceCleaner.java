@@ -30,8 +30,10 @@ public interface StackTraceCleaner {
      * It's recommended to override this method in subclasses to avoid potentially costly re-boxing operations.
      */
     default boolean isIn(StackFrameMetadata candidate) {
-        
-    }
+    return isIn(
+    new StackTraceElement(
+    candidate.getClassName(), candidate.getMethodName(), null, -1));
+}
 
     /**
      * Very similar to the StackFrame class declared on the StackWalker api.

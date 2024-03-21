@@ -54,7 +54,23 @@ public class ClassPathLoader {
      */
     @SuppressWarnings({"unchecked"})
     public IMockitoConfiguration loadConfiguration() {
-        // Trying to get config from classpath
-        
+        Class<?> configClass;
+        Object configObject;
+        try {
+            configClass = Class.forName(MOCKITO_CONFIGURATION_CLASS_NAME);
+            configObject = configClass.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException e) {
+            return null;
+        } catch (Exception e) {
+            throw new MockitoConfigurationException(
+            "Failed to load " + MOCKITO_CONFIGURATION_CLASS_NAME, e);
+        }
+
+        if (configObject instanceof IMockitoConfiguration) {
+            return (IMockitoConfiguration) configObject;
+        } else {
+            throw new MockitoConfigurationException(
+            "Unexpected type for " + MOCKITO_CONFIGURATION_CLASS_NAME + ": " + configObject.getClass().getName());
+        }
     }
 }

@@ -75,27 +75,50 @@ public class DefaultMockitoPlugins implements MockitoPlugins {
 
     @Override
     public <T> T getDefaultPlugin(Class<T> pluginType) {
-        
+        return create(pluginType, DEFAULT_PLUGINS.get(pluginType.getName()));
     }
 
     public static String getDefaultPluginClass(String classOrAlias) {
-        
+        return DEFAULT_PLUGINS.get(classOrAlias);
     }
 
     /**
      * Creates an instance of given plugin type, using specific implementation class.
      */
     private <T> T create(Class<T> pluginType, String className) {
-        
+        if (className == null) {
+            throw new IllegalStateException(
+            "No default implementation for requested plugin type: "
+            + pluginType.getName()
+            + "\n(For internal Mockito use, please create a ticket on the GitHub page.)");
+        }
+        try {
+            // Default implementation. We're being explicit to avoid using any ClassLoader magic
+            return pluginType.cast(Class.forName(className).newInstance());
+        } catch (ClassCastException | InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException(
+            "Could not instantiate default implementation for requested plugin type: "
+            + pluginType.getName()
+            + "\n(If you are using an external mock maker, please check your mock maker selection settings and the classpath.)",
+            e);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(
+            "Requested plugin type implementation class was not found.\nPlugin type: "
+            + pluginType.getName()
+            + "\nClass name: "
+            + className
+            + "\n(If you are using an external mock maker, please check your mock maker selection settings and the classpath.)",
+            e);
+        }
     }
 
     @Override
     public MockMaker getInlineMockMaker() {
-        
+        return create(MockMaker.class, DEFAULT_PLUGINS.get(INLINE_ALIAS));
     }
 
     @Override
     public MockMaker getMockMaker(String mockMaker) {
-        
+        return MockUtil.getMockMaker(mockMaker);
     }
 }

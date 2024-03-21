@@ -13,7 +13,7 @@ public class ArgumentsAreDifferent extends MockitoAssertionError {
     private static final long serialVersionUID = 1L;
 
     public ArgumentsAreDifferent(String message) {
-        
+        super(message);
     }
 
     /**
@@ -26,11 +26,11 @@ public class ArgumentsAreDifferent extends MockitoAssertionError {
      * @param actual ignored
      */
     public ArgumentsAreDifferent(String message, String wanted, String actual) {
-        
+        super(message);
     }
 
     @Override
     public String getMessage() {
-        
+        return removeFirstLine(super.getMessage());
     }
 }

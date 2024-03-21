@@ -80,11 +80,35 @@ public class ReturnsEmptyValues implements Answer<Object>, Serializable {
      */
     @Override
     public Object answer(InvocationOnMock invocation) {
-        
+        if (isToStringMethod(invocation.getMethod())) {
+            MockName name = MockUtil.getMockName(invocation.getMock());
+            if (name.isDefault()) {
+                return "Mock for "
+                + MockUtil.getMockSettings(invocation.getMock()).getTypeToMock().getName()
+                + ", hashCode: "
+                + invocation.getMock().hashCode();
+            } else {
+                return name.toString();
+            }
+        } else if (isCompareToMethod(invocation.getMethod())) {
+            return Integer.valueOf(0);
+        }
+
+        Class<?> returnType = invocation.getMethod().getReturnType();
+        return this.returnValueFor(returnType);
     }
 
     Object returnValueFor(Class<?> type) {
-        
+        if (type == Stream.class) {
+            return Stream.empty();
+        } else if (type == IntStream.class) {
+            return IntStream.empty();
+        } else if (type == LongStream.class) {
+            return LongStream.empty();
+        } else if (type == DoubleStream.class) {
+            return DoubleStream.empty();
+        }
+        return returnCommonEmptyValueFor(type);
     }
 
     /**
@@ -94,6 +118,15 @@ public class ReturnsEmptyValues implements Answer<Object>, Serializable {
      * @return the empty value, or {@code null}
      */
     static Object returnCommonEmptyValueFor(Class<?> type) {
-        
+        if (type == Optional.class) {
+            return Optional.empty();
+        } else if (type == OptionalDouble.class) {
+            return OptionalDouble.empty();
+        } else if (type == OptionalInt.class) {
+            return OptionalInt.empty();
+        } else if (type == OptionalLong.class) {
+            return OptionalLong.empty();
+        }
+        return null;
     }
 }

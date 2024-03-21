@@ -16,26 +16,26 @@ public class SingleRegisteredInvocation implements RegisteredInvocations, Serial
 
     @Override
     public void add(Invocation invocation) {
-        
+        this.invocation = invocation;
     }
 
     @Override
     public void removeLast() {
-        
+        invocation = null;
     }
 
     @Override
     public List<Invocation> getAll() {
-        
+        return Collections.emptyList();
     }
 
     @Override
     public void clear() {
-        
+        invocation = null;
     }
 
     @Override
     public boolean isEmpty() {
-        
+        return invocation == null;
     }
 }

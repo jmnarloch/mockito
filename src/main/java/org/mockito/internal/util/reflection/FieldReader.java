@@ -17,14 +17,20 @@ public class FieldReader {
     final MemberAccessor accessor = Plugins.getMemberAccessor();
 
     public FieldReader(Object target, Field field) {
-        
+        this.target = target;
+        this.field = field;
     }
 
     public boolean isNull() {
-        
+        return accessor.get(target, field) == null;
     }
 
     public Object read() {
-        
+        try {
+            return accessor.get(field, target);
+        } catch (Exception e) {
+            throw new MockitoException(
+            "Cannot read state on field: " + field + ", for object: " + target, e);
+        }
     }
 }

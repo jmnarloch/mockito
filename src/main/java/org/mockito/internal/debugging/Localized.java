@@ -12,14 +12,15 @@ public class Localized<T> {
     private final Location location;
 
     public Localized(T object) {
-        
+        this.object = object;
+        location = LocationFactory.create();
     }
 
     public T getObject() {
-        
+        return object;
     }
 
     public Location getLocation() {
-        
+        return location;
     }
 }

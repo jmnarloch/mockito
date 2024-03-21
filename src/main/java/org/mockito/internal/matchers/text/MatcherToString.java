@@ -25,8 +25,21 @@ final class MatcherToString {
      * @return
      */
     static String toString(ArgumentMatcher<?> matcher) {
-        
+        Class<?> cls = matcher.getClass();
+        while (cls != Object.class) {
+            if (isToStringMethod(cls.getDeclaredMethods())) {
+                break;
+            }
+            cls = cls.getSuperclass();
+        }
+        if (cls == Object.class) {
+            // Fallback, if no custom toString() found, use decamelized classname
+            return decamelizeMatcherName(matcher.getClass().getSimpleName());
+        } else {
+            // Use default toString()
+            return matcher.toString();
+        }
     }
 
-    private MatcherToString() { }
+    private MatcherToString() {}
 }

@@ -15,18 +15,30 @@ public class LenientCopyTool {
     MemberAccessor accessor = Plugins.getMemberAccessor();
 
     public <T> void copyToMock(T from, T mock) {
-        
+        copy(from, mock, from.getClass());
     }
 
     public <T> void copyToRealObject(T from, T to) {
-        
+        copy(from, to, from.getClass());
     }
 
     private <T> void copy(T from, T to, Class<?> fromClazz) {
-        
+        while (fromClazz != Object.class) {
+            copyValues(from, to, fromClazz);
+            fromClazz = fromClazz.getSuperclass();
+        }
     }
 
     private <T> void copyValues(T from, T mock, Class<?> classFrom) {
-        
+        Field[] fields = classFrom.getDeclaredFields();
+
+        for (Field field : fields) {
+            // ignore static fields
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            Object value = accessor.get(field, from);
+            accessor.set(field, mock, value);
+        }
     }
 }

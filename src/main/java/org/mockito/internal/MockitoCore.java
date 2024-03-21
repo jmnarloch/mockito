@@ -71,74 +71,180 @@ public class MockitoCore {
             Plugins.getDoNotMockEnforcer();
 
     public <T> T mock(Class<T> typeToMock, MockSettings settings) {
-        
+        checkDoNotMockAnnotation(Plugins.getMockMaker().createMockType(typeToMock, settings));
+        return MockUtil.createMock(typeToMock, settings);
     }
 
     public <T> MockedStatic<T> mockStatic(Class<T> classToMock, MockSettings settings) {
-        
+        if (!MockSettingsImpl.class.isInstance(settings)) {
+            throw new IllegalArgumentException(
+            "Unexpected implementation of '"
+            + settings.getClass().getCanonicalName()
+            + "' : this is should be handled by Mockito team");
+        }
+        MockSettingsImpl impl = MockSettingsImpl.class.cast(settings);
+        MockCreationSettings<T> creationSettings = impl.buildStatic(classToMock);
+        checkDoNotMockAnnotation(creationSettings);
+        MockMaker.StaticMockControl<T> control = createStaticMock(classToMock, creationSettings);
+        control.enable();
+        mockingProgress().mockingStarted(classToMock, creationSettings);
+        return new MockedStaticImpl<>(control);
     }
 
     private void checkDoNotMockAnnotation(MockCreationSettings<?> creationSettings) {
-        
+        String warning = DO_NOT_MOCK_ENFORCER.checkTypeForDoNotMock(creationSettings.getTypeToMock());
+        if (warning != null) {
+            throw new DoNotMockException(
+            warning + "\n" + "Strictness of WhensMocks: " + creationSettings.getStrictness());
+        }
     }
 
     public <T> MockedConstruction<T> mockConstruction(
             Class<T> typeToMock,
             Function<MockedConstruction.Context, ? extends MockSettings> settingsFactory,
             MockedConstruction.MockInitializer<T> mockInitializer) {
-        
+        Function<MockedConstruction.Context, MockCreationSettings<T>> creationSettings =
+        input -> {
+            MockSettings value = settingsFactory.apply(input);
+            if (!(value instanceof MockCreationSettings)) {
+                throw new IllegalArgumentException(
+                "Unexpected implementation of 'MockSettings' is passed : "
+                + value.getClass().getCanonicalName());
+            }
+            return (MockCreationSettings) value;
+        };
+        return createConstructionMock(typeToMock, creationSettings, mockInitializer);
     }
 
     public <T> OngoingStubbing<T> when(T methodCall) {
-        
+        mockingProgress().stubbingStarted();
+        return new OngoingStubbingImpl();
     }
 
     public <T> T verify(T mock, VerificationMode mode) {
-        
+        if (mock == null) {
+            throw nullPassedToVerify();
+        }
+        MockingDetails mockingDetails = mockingDetails(mock);
+        if (!mockingDetails.isMock()) {
+            throw notAMockPassedToVerify(mock.getClass());
+        }
+        assertNotStubOnlyMock(mock);
+        MockHandler handler = mockingDetails.getMockHandler();
+        mock =
+        (T)
+        VerificationStartedNotifier.notifyVerificationStarted(
+        handler.getMockSettings().getVerificationStartedListeners(),
+        mockingDetails);
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.verificationStarted(mode);
+        mockingProgress.validateState();
+        return mock;
     }
 
     public <T> void reset(T... mocks) {
-        
+        assertMocksNotEmpty(mocks);
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        mockingProgress.reset();
+        for (T m : mocks) {
+            resetMock(m);
+        }
     }
 
     public <T> void clearInvocations(T... mocks) {
-        
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        mockingProgress.reset();
+        for (T m : mocks) {
+            getInvocationContainer(m).clearInvocations();
+        }
     }
 
     public void verifyNoMoreInteractions(Object... mocks) {
-        
+        assertMocksNotEmpty(mocks);
+        mockingProgress().validateState();
+        for (Object mock : mocks) {
+            try {
+                if (mock == null) {
+                    throw nullPassedToVerifyNoMoreInteractions();
+                }
+                InvocationContainerImpl invocations = getInvocationContainer(mock);
+                assertNotStubOnlyMock(mock);
+                VerificationDataImpl data = new VerificationDataImpl(invocations, null);
+                noMoreInteractions().verify(data);
+            } catch (NotAMockException e) {
+                throw notAMockPassedToVerifyNoMoreInteractions();
+            }
+        }
     }
 
     public void verifyNoInteractions(Object... mocks) {
-        
+        assertMocksNotEmpty(mocks);
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        VerificationDataImpl data =
+        new VerificationDataImpl(
+        mockingProgress.verificationStarted(
+        VerificationModeFactory.noInteractions()));
+        for (Object mock : mocks) {
+            getInvocationContainer(mock).verifyNoInteractions();
+        }
+        mockingProgress.verificationFinished(data, new NoInteractionsVerificationMode());
     }
 
     public void verifyNoMoreInteractionsInOrder(List<Object> mocks, InOrderContext inOrderContext) {
-        
+        mockingProgress().validateState();
+        VerificationDataInOrder data =
+        new VerificationDataInOrderImpl(
+        inOrderContext, VerifiableInvocationsFinder.find(mocks), null);
+        VerificationModeFactory.noMoreInteractions().verifyInOrder(data);
     }
 
     private void assertMocksNotEmpty(Object[] mocks) {
-        
+        if (mocks == null) {
+            throw mocksHaveToBePassedToVerifyNoMoreInteractions();
+        }
+        if (mocks.length == 0) {
+            throw noMocksToInteractWith();
+        }
     }
 
     private void assertNotStubOnlyMock(Object mock) {
-        
+        if (getMockHandler(mock).getMockSettings().isStubOnly()) {
+            throw stubPassedToVerify(mock);
+        }
     }
 
     public InOrder inOrder(Object... mocks) {
-        
+        if (mocks == null || mocks.length == 0) {
+            throw mocksHaveToBePassedWhenCreatingInOrder();
+        }
+        for (Object mock : mocks) {
+            if (mock == null) {
+                throw nullPassedWhenCreatingInOrder();
+            }
+            if (!isMock(mock)) {
+                throw notAMockPassedWhenCreatingInOrder();
+            }
+            assertNotStubOnlyMock(mock);
+        }
+        return new InOrderImpl(Arrays.asList(mocks));
     }
 
     public Stubber stubber() {
-        
+        return stubber(null);
     }
 
     public Stubber stubber(Strictness strictness) {
-        
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.stubbingStarted();
+        mockingProgress.resetOngoingStubbing();
+        return new StubberImpl(strictness);
     }
 
     public void validateMockitoUsage() {
-        
+        mockingProgress().validateState();
     }
 
     /**
@@ -147,22 +253,25 @@ public class MockitoCore {
      * @return last invocation
      */
     public Invocation getLastInvocation() {
-        
+        return mockingProgress().pullInvocation();
     }
 
     public Object[] ignoreStubs(Object... mocks) {
-        
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        mockingProgress.ignoreStubs(mocks);
+        return mocks;
     }
 
     public MockingDetails mockingDetails(Object toInspect) {
-        
+        return new DefaultMockingDetails(toInspect);
     }
 
     public LenientStubber lenient() {
-        
+        return new DefaultLenientStubber();
     }
 
     public void clearAllCaches() {
-        
+        MockUtil.clearAllCaches();
     }
 }

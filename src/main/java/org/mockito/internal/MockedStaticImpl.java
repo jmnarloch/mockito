@@ -38,60 +38,127 @@ public final class MockedStaticImpl<T> implements MockedStatic<T> {
     private final Location location = LocationFactory.create();
 
     protected MockedStaticImpl(MockMaker.StaticMockControl<T> control) {
-        
+        this.control = control;
     }
 
     @Override
     public <S> OngoingStubbing<S> when(Verification verification) {
-        
+        assertNotClosed();
+
+        verification.apply();
+        return null;
     }
 
     @Override
     public void verify(Verification verification, VerificationMode mode) {
-        
+        assertNotClosed();
+
+        MockingDetails mockingDetails = Mockito.mockingDetails(control.getType());
+        if (mockingDetails.isMocked()) {
+            MockHandler handler = mockingDetails.getMockHandler();
+            if (!(handler instanceof MockHandlerImpl)) {
+                throw new MockitoException(
+                handler.getClass().getSimpleName() + " is not implemented by Mockito");
+            }
+            MockHandlerImpl mockHandler = (MockHandlerImpl) handler;
+            mockHandler.getMockSettings().getVerificationStartedListeners().stream()
+            .forEach(
+            listener -> {
+                try {
+                    listener.onVerificationStarted(
+                    new VerificationStartedNotifier.ModeVerifyingWrapper(
+                    mode));
+                } catch (Exception e) {
+                    throw new MockitoException(
+                    "Failed to notify VerificationStartedListener about "
+                    + mode,
+                    e);
+                }
+            });
+        }
+
+        mockingProgress().validateState();
+        InvocationContainerImpl invocations = getInvocationContainer(control.getType());
+        VerificationDataImpl data = new VerificationDataImpl(invocations, null);
+        mode.verify(verification.withLocation(location), data);
     }
 
     @Override
     public void reset() {
-        
+        assertNotClosed();
+
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        mockingProgress.reset();
+        mockingProgress.resetOngoingStubbing();
+
+        resetMock(control.getType());
     }
 
     @Override
     public void clearInvocations() {
-        
+        assertNotClosed();
+
+        MockingProgress mockingProgress = mockingProgress();
+        mockingProgress.validateState();
+        mockingProgress.reset();
+        mockingProgress.resetOngoingStubbing();
+
+        getInvocationContainer(control.getType()).clearInvocations();
     }
 
     @Override
     public void verifyNoMoreInteractions() {
-        
+        assertNotClosed();
+
+        mockingProgress().validateState();
+        InvocationContainerImpl invocations = getInvocationContainer(control.getType());
+        VerificationDataImpl data = new VerificationDataImpl(invocations, null);
+        noMoreInteractions().verify(data);
     }
 
     @Override
     public void verifyNoInteractions() {
-        
+        assertNotClosed();
+
+        mockingProgress().validateState();
+        InvocationContainerImpl invocations = getInvocationContainer(control.getType());
+        VerificationDataImpl data = new VerificationDataImpl(invocations, null);
+        noInteractions().verify(data);
     }
 
     @Override
     public boolean isClosed() {
-        
+        return closed;
     }
 
     @Override
     public void close() {
-        
+        assertNotClosed();
+
+        closed = true;
+        control.disable();
     }
 
     @Override
     public void closeOnDemand() {
-        
+        if (!closed) {
+            close();
+        }
     }
 
     private void assertNotClosed() {
-        
+        if (closed) {
+            throw new MockitoException(
+            join(
+            "The static mock created at",
+            location.toString(),
+            "is already resolved and cannot longer be used"));
+        }
     }
 
     @Override
     public String toString() {
-        
+        return "static mock for " + control.getType().getName();
     }
 }

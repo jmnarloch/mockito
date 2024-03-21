@@ -20,16 +20,14 @@ public class MismatchReportingTestListener implements MockitoTestListener {
     private List<Object> mocks = new LinkedList<>();
 
     public MismatchReportingTestListener(MockitoLogger logger) {
-        
+        this.logger = logger;
     }
 
     @Override
-    public void testFinished(TestFinishedEvent event) {
-        
-    }
+    public void testFinished(TestFinishedEvent event) {}
 
     @Override
     public void onMockCreated(Object mock, MockCreationSettings settings) {
-        
+        this.mocks.add(mock);
     }
 }

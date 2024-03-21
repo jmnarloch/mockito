@@ -46,7 +46,7 @@ public class FieldInitializer {
      * @param field Field to be initialize.
      */
     public FieldInitializer(Object fieldOwner, Field field) {
-        
+        this(fieldOwner, field, new NoArgConstructorInstantiator(fieldOwner, field));
     }
 
     /**
@@ -62,11 +62,19 @@ public class FieldInitializer {
      */
     public FieldInitializer(
             Object fieldOwner, Field field, ConstructorArgumentResolver argResolver) {
-        
+        this(
+        fieldOwner,
+        field,
+        new ParameterizedConstructorInstantiator(fieldOwner, field, argResolver));
     }
 
     private FieldInitializer(Object fieldOwner, Field field, ConstructorInstantiator instantiator) {
-        
+        if (new FieldReader(fieldOwner, field).isNull()) {
+            checkThatConstructionIsAllowed(field);
+        }
+        this.fieldOwner = fieldOwner;
+        this.field = field;
+        this.instantiator = instantiator;
     }
 
     /**
@@ -75,31 +83,57 @@ public class FieldInitializer {
      * @return Actual field instance.
      */
     public FieldInitializationReport initialize() {
-        
+        try {
+            return acquireFieldInstance();
+        } catch (IllegalAccessError e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MockitoException(
+            "Cannot instantiate @Mock object '" + field.getName() + "'",
+            e);
+        }
     }
 
     private void checkNotLocal(Field field) {
-        
+        if (field.getType().isLocalClass()) {
+            throw new MockitoException(
+            "the type '" + field.getType().getSimpleName() + "' is a local class.");
+        }
     }
 
     private void checkNotInner(Field field) {
-        
+        Class<?> type = field.getType();
+        if (type.isMemberClass() && !isStatic(type.getModifiers())) {
+            throw new MockitoException(
+            "the type '" + type.getSimpleName() + "' is an inner non static class.");
+        }
     }
 
     private void checkNotInterface(Field field) {
-        
+        if (field.getType().isInterface()) {
+            throw new MockitoException(
+            "the type '" + field.getType().getSimpleName() + "' is an interface");
+        }
     }
 
     private void checkNotAbstract(Field field) {
-        
+        if (Modifier.isAbstract(field.getType().getModifiers())) {
+            throw new MockitoException(
+            "the type '" + field.getType().getSimpleName() + "' is an abstract class.");
+        }
     }
 
     private void checkNotEnum(Field field) {
-        
+        if (field.getType().isEnum()) {
+            throw new MockitoException(
+            "the type '" + field.getType().getSimpleName() + "' is an enum.");
+        }
     }
 
     private FieldInitializationReport acquireFieldInstance() throws IllegalAccessException {
-        
+        final MemberAccessor accessor = Plugins.getMemberAccessor();
+        Object fieldInstance = accessor.get(field, instantiator);
+        return new FieldInitializationReport(fieldInstance, true, instantiator);
     }
 
     /**
@@ -145,12 +179,18 @@ public class FieldInitializer {
          * Fields are assumed to be accessible.
          */
         NoArgConstructorInstantiator(Object testClass, Field field) {
-            
+            this.testClass = testClass;
+            this.field = field;
         }
 
         @Override
         public FieldInitializationReport instantiate() {
-            
+            Constructor<?> constructor = (Constructor<?>) field.getAnnotatedType().getType();
+            checkParameterized(constructor, field);
+
+            return FieldInitializationReport.withConstructionError(
+            testClass, field, constructor, MockitoException::new)
+            .run();
         }
     }
 
@@ -172,12 +212,20 @@ public class FieldInitializer {
                 new Comparator<Constructor<?>>() {
                     @Override
                     public int compare(Constructor<?> constructorA, Constructor<?> constructorB) {
-                        
-                    }
+            return Integer.compare(
+            countMockableParams(constructorB),
+            countMockableParams(constructorA));
+        }
 
                     private int countMockableParams(Constructor<?> constructor) {
-                        
-                    }
+            int mockitoArgs = 0;
+            for (Class<?> type : constructor.getParameterTypes()) {
+                if (MockUtil.isTypeMockable(type)) {
+                    mockitoArgs++;
+                }
+            }
+            return mockitoArgs;
+        }
                 };
 
         /**
@@ -186,20 +234,48 @@ public class FieldInitializer {
          */
         ParameterizedConstructorInstantiator(
                 Object testClass, Field field, ConstructorArgumentResolver argumentResolver) {
-            
+            this.testClass = testClass;
+            this.field = field;
+            this.argResolver = argumentResolver;
         }
 
         @Override
         public FieldInitializationReport instantiate() {
-            
+            Class<?> clazz = field.getType();
+            Constructor<?> constructor = biggestConstructor(clazz);
+            checkParameterized(constructor, field);
+
+            MemberAccessor accessor = Plugins.getMemberAccessor();
+            try {
+                Object[] args = argResolver.resolveTypeInstances(constructor.getParameterTypes());
+                Object fieldValue =
+                accessor.newInstance(constructor, MockUtil.getMockName(testClass), args);
+                return new FieldInitializationReport.Success(fieldValue);
+            } catch (MockitoException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new MockitoException(
+                "Unable to instantiate " + field + " for " + testClass, e);
+            }
         }
 
         private void checkParameterized(Constructor<?> constructor, Field field) {
-            
+            if (constructor.getParameterTypes().length == 0) {
+                throw new MockitoException(
+                "some checks have been bypassed, wanted "
+                + constructor
+                + " to be invoked, but dont' know on which objects, first step was "
+                + field
+                + " instantiation");
+            }
         }
 
         private Constructor<?> biggestConstructor(Class<?> clazz) {
-            
+            Constructor<?> constructor = new ConstructorResolver().resolveConstructor(clazz);
+
+            checkParameterized(constructor, field);
+
+            return constructor;
         }
     }
 }

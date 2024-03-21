@@ -34,8 +34,28 @@ public final class GenericTypeExtractor {
      */
     public static Class<?> genericTypeOf(
             Class<?> rootClass, Class<?> targetBaseClass, Class<?> targetBaseInterface) {
-        // looking for candidates in the hierarchy of rootClass
-        
+        Class<?> type = rootClass;
+
+        while (type != Object.class) {
+            // First, attempt to find the generic type from the interfaces
+            Type intfType = findGenericInterface(type, targetBaseInterface);
+            if (intfType != null) {
+                return extractGeneric(intfType);
+            }
+
+            // If no generic types were found in the interfaces, check the super class
+            // instead
+            if (targetBaseClass.isAssignableFrom(type)) {
+                Type genericSuper = type.getGenericSuperclass();
+                if (genericSuper instanceof ParameterizedType) {
+                    return extractGeneric(genericSuper);
+                }
+            }
+
+            type = type.getSuperclass();
+        }
+
+        return Object.class;
     }
 
     /**
@@ -43,7 +63,18 @@ public final class GenericTypeExtractor {
      * Returns null if not found. Recurses the interface hierarchy.
      */
     private static Type findGenericInterface(Class<?> sourceClass, Class<?> targetBaseInterface) {
-        
+        Type[] genericInterfaces = sourceClass.getGenericInterfaces();
+        Class<?>[] interfaces = sourceClass.getInterfaces();
+        for (int i = 0; i < genericInterfaces.length; i++) {
+            if (interfaces[i] == targetBaseInterface) {
+                return genericInterfaces[i];
+            }
+            Type nested = findGenericInterface(interfaces[i], targetBaseInterface);
+            if (nested != null) {
+                return nested;
+            }
+        }
+        return null;
     }
 
     /**
@@ -51,8 +82,14 @@ public final class GenericTypeExtractor {
      * If there is no generic parameter it returns Object.class
      */
     private static Class<?> extractGeneric(Type type) {
-        
+        if (type instanceof ParameterizedType) {
+            Type[] genericTypes = ((ParameterizedType) type).getActualTypeArguments();
+            if (genericTypes.length > 0 && genericTypes[0] instanceof Class) {
+                return (Class<?>) genericTypes[0];
+            }
+        }
+        return Object.class;
     }
 
-    private GenericTypeExtractor() { }
+    private GenericTypeExtractor() {}
 }

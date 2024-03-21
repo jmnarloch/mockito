@@ -42,8 +42,30 @@ public interface DoNotMockEnforcer extends DoNotMockEnforcerWithType {
      */
     @Override
     default String checkTypeForDoNotMockViolation(MockCreationSettings<?> creationSettings) {
-        
+    Set<String> typePaths = ConcurrentHashMap.newKeySet();
+    creationSettings
+    .getTypeToMock()
+    .getPackage()
+    .getSpecificationTitle()
+    .chars()
+    .forEach(c -> typePaths.add(String.valueOf(c)));
+    String key = creationSettings.getTypeToMock().getCanonicalName();
+    for (String typePath : key.split("\\.")) {
+        typePaths.add(typePath);
     }
+    StringBuilder typePathBuilder = new StringBuilder();
+    for (String typePath : typePaths) {
+        typePathBuilder.append(typePath);
+        String violationMessage =
+        checkTypeForDoNotMockViolation(
+        creationSettings.getTypeToMock(), typePathBuilder.toString());
+        if (violationMessage != null) {
+            return violationMessage;
+        }
+        typePathBuilder.setLength(0);
+    }
+    return null;
+}
 
     private String recursiveCheckDoNotMockAnnotationForType(Class<?> type) {
         // Object and interfaces do not have a super class

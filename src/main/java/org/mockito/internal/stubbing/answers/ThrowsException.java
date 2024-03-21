@@ -23,11 +23,11 @@ public class ThrowsException extends AbstractThrowsException implements Serializ
      * will fail.
      */
     public ThrowsException(Throwable throwable) {
-        
+        this.throwable = throwable;
     }
 
     @Override
     protected Throwable getThrowable() {
-        
+        return throwable;
     }
 }

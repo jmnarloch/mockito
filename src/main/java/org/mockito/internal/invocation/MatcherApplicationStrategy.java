@@ -17,7 +17,8 @@ public class MatcherApplicationStrategy {
 
     private MatcherApplicationStrategy(
             Invocation invocation, List<? extends ArgumentMatcher<?>> matchers) {
-        
+        this.invocation = invocation;
+        this.matchers = matchers;
     }
 
     /**
@@ -34,7 +35,7 @@ public class MatcherApplicationStrategy {
      */
     public static MatcherApplicationStrategy getMatcherApplicationStrategyFor(
             Invocation invocation, List<? extends ArgumentMatcher<?>> matchers) {
-        
+        return new MatcherApplicationStrategy(invocation, matchers);
     }
 
     /**
@@ -54,21 +55,38 @@ public class MatcherApplicationStrategy {
      *         </ul>
      */
     public boolean forEachMatcherAndArgument(ArgumentMatcherAction action) {
-        
+        final List<? extends ArgumentMatcher<?>> matchers = this.matchers;
+        int i = 0;
+        for (Object n : invocation.getArguments()) {
+            if (!action.apply(matchers, i, n)) {
+                return false;
+            }
+            i++;
+        }
+        return true;
     }
 
     private boolean argsMatch(
             Object[] arguments,
             List<? extends ArgumentMatcher<?>> matchers,
             ArgumentMatcherAction action) {
-        
+        for (int i = 0; i < arguments.length; i++) {
+            ArgumentMatcher<?> matcher = matchers.get(i);
+            Object argument = arguments[i];
+
+            if (!action.apply(matcher, argument)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Class<?> lastMatcherType() {
-        
+        return lastParameterType();
     }
 
     private Class<?> lastParameterType() {
-        
+        final Class<?>[] parameterTypes = invocation.getMethod().getParameterTypes();
+        return parameterTypes[parameterTypes.length - 1];
     }
 }

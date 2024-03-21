@@ -26,15 +26,46 @@ import org.mockito.invocation.MatchableInvocation;
 
 public class MissingInvocationChecker {
 
-    private MissingInvocationChecker() { }
+    private MissingInvocationChecker() {}
 
     public static void checkMissingInvocation(
             List<Invocation> invocations, MatchableInvocation wanted) {
-        
+        List<Invocation> actualInvocations = findInvocations(invocations, wanted, 0);
+
+        if (!actualInvocations.isEmpty()) {
+            return;
+        }
+
+        Invocation similar = findSimilarInvocation(invocations, wanted);
+        if (similar == null) {
+            checkSuspiciouslyNotMatchingArguments(invocations, wanted);
+        }
+
+        if (similar != null) {
+            Location actualLocation = similar.getLocation();
+            Location expectedLocation = wanted.getLocation();
+            throw argumentsAreDifferent(
+            actualLocation,
+            wanted.getInvocation(),
+            getNotMatchingArgsWithSameName(wanted, similar),
+            getSuspiciouslyNotMatchingArgsIndexes(wanted, similar));
+        } else {
+            throw wantedButNotInvoked(wanted);
+        }
     }
 
     public static void checkMissingInvocation(
             List<Invocation> invocations, MatchableInvocation wanted, InOrderContext context) {
-        
+        if (!invocations.isEmpty()) {
+            return;
+        }
+
+        Invocation previousInOrder = findPreviousVerifiedInOrder(context, wanted);
+        if (previousInOrder == null) {
+            return;
+        }
+
+        Location locationOfPreviousInOrder = previousInOrder.getLocation();
+        throw wantedButNotInvokedInOrder(wanted, locationOfPreviousInOrder);
     }
 }

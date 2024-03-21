@@ -26,32 +26,63 @@ public class DefaultMockitoSessionBuilder implements MockitoSessionBuilder {
 
     @Override
     public MockitoSessionBuilder initMocks(Object testClassInstance) {
-        
+        if (testClassInstance != null) {
+            this.testClassInstances.add(testClassInstance);
+        }
+        return this;
     }
 
     @Override
     public MockitoSessionBuilder initMocks(Object... testClassInstances) {
-        
+        if (testClassInstances != null) {
+            for (Object instance : testClassInstances) {
+                initMocks(instance);
+            }
+        }
+        return this;
     }
 
     @Override
     public MockitoSessionBuilder name(String name) {
-        
+        this.name = name;
+        return this;
     }
 
     @Override
     public MockitoSessionBuilder strictness(Strictness strictness) {
-        
+        this.strictness = strictness;
+        return this;
     }
 
     @Override
     public MockitoSessionBuilder logger(MockitoSessionLogger logger) {
-        
+        this.logger = logger;
+        return this;
     }
 
     @Override
     public MockitoSession startMocking() {
-        // Configure default values
-        
+        if (logger == null) {
+            logger = new OnStdOutLogger();
+        }
+
+        if (strictness == null) {
+            strictness = Strictness.WARN;
+        }
+
+        if (testClassInstances.isEmpty()) {
+            logger.log(
+            StartMocksEvent.NONE,
+            strictness,
+            emptyList(),
+            "The test double usage has been completed.");
+        }
+
+        return new DefaultMockitoSession(
+        name,
+        testClassInstances,
+        strictness,
+        logger,
+        Plugins.getMockitoInvocationHandler());
     }
 }

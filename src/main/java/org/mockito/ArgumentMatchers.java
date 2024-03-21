@@ -138,7 +138,8 @@ public class ArgumentMatchers {
      * @see #anyBoolean()
      */
     public static <T> T any() {
-        
+        reportMatcher(Any.ANY);
+        return null;
     }
 
     /**
@@ -176,7 +177,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <T> T any(Class<T> type) {
-        
+        reportMatcher(new InstanceOf(type, "<any " + type.getCanonicalName() + ">"));
+        return defaultValue(type);
     }
 
     /**
@@ -190,7 +192,8 @@ public class ArgumentMatchers {
      * @see #any(Class)
      */
     public static <T> T isA(Class<T> type) {
-        
+        reportMatcher(new InstanceOf(type));
+        return defaultValue(type);
     }
 
     /**
@@ -211,7 +214,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static boolean anyBoolean() {
-        
+        reportMatcher(new InstanceOf(Boolean.class, "<any boolean>"));
+        return false;
     }
 
     /**
@@ -232,7 +236,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static byte anyByte() {
-        
+        reportMatcher(new InstanceOf(Byte.class, "<any byte>"));
+        return 0;
     }
 
     /**
@@ -253,7 +258,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static char anyChar() {
-        
+        reportMatcher(new InstanceOf(Character.class, "<any char>"));
+        return 0;
     }
 
     /**
@@ -274,7 +280,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static int anyInt() {
-        
+        reportMatcher(new InstanceOf(Integer.class, "<any integer>"));
+        return 0;
     }
 
     /**
@@ -295,7 +302,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static long anyLong() {
-        
+        reportMatcher(new InstanceOf(Long.class, "<any long>"));
+        return 0;
     }
 
     /**
@@ -316,7 +324,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static float anyFloat() {
-        
+        reportMatcher(new InstanceOf(Float.class, "<any float>"));
+        return 0;
     }
 
     /**
@@ -337,7 +346,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static double anyDouble() {
-        
+        reportMatcher(new InstanceOf(Double.class, "<any double>"));
+        return 0;
     }
 
     /**
@@ -358,7 +368,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static short anyShort() {
-        
+        reportMatcher(new InstanceOf(Short.class, "<any short>"));
+        return 0;
     }
 
     /**
@@ -379,7 +390,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static String anyString() {
-        
+        reportMatcher(new InstanceOf(String.class, "<any string>"));
+        return "";
     }
 
     /**
@@ -400,7 +412,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <T> List<T> anyList() {
-        
+        reportMatcher(new InstanceOf(List.class, "<any List>"));
+        return new ArrayList<T>(0);
     }
 
     /**
@@ -421,7 +434,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <T> Set<T> anySet() {
-        
+        reportMatcher(new InstanceOf(Set.class, "<any set>"));
+        return new HashSet<T>(0);
     }
 
     /**
@@ -442,7 +456,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <K, V> Map<K, V> anyMap() {
-        
+        reportMatcher(new InstanceOf(Map.class, "<any map>"));
+        return new HashMap<K, V>(0);
     }
 
     /**
@@ -463,7 +478,8 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <T> Collection<T> anyCollection() {
-        
+        reportMatcher(new InstanceOf(Collection.class, "<any collection>"));
+        return new ArrayList<T>(0);
     }
 
     /**
@@ -485,7 +501,8 @@ public class ArgumentMatchers {
      * @since 2.1.0
      */
     public static <T> Iterable<T> anyIterable() {
-        
+        reportMatcher(new InstanceOf(Iterable.class, "<any iterable>"));
+        return new ArrayList<T>(0);
     }
 
     /**
@@ -499,7 +516,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static boolean eq(boolean value) {
-        
+        reportMatcher(new Equals(value));
+        return false;
     }
 
     /**
@@ -513,7 +531,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static byte eq(byte value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -527,7 +546,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static char eq(char value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -541,7 +561,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static double eq(double value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -555,7 +576,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static float eq(float value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -569,7 +591,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static int eq(int value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -583,7 +606,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static long eq(long value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -595,7 +619,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static short eq(short value) {
-        
+        reportMatcher(new Equals(value));
+        return 0;
     }
 
     /**
@@ -609,7 +634,11 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T eq(T value) {
-        
+        reportMatcher(new Equals(value));
+        if (value == null) {
+            return null;
+        }
+        return (T) Primitives.defaultValue(value.getClass());
     }
 
     /**
@@ -637,7 +666,8 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T refEq(T value, String... excludeFields) {
-        
+        reportMatcher(new ReflectionEquals(value, excludeFields));
+        return null;
     }
 
     /**
@@ -652,7 +682,11 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T same(T value) {
-        
+        reportMatcher(new Same(value));
+        if (value == null) {
+            return null;
+        }
+        return (T) Primitives.defaultValue(value.getClass());
     }
 
     /**
@@ -666,7 +700,8 @@ public class ArgumentMatchers {
      * @see #isNotNull()
      */
     public static <T> T isNull() {
-        
+        reportMatcher(Null.NULL);
+        return null;
     }
 
     /**
@@ -682,7 +717,8 @@ public class ArgumentMatchers {
      * @since 4.11.0
      */
     public static <T> T isNull(Class<T> type) {
-        
+        reportMatcher(new Null());
+        return defaultValue(type);
     }
 
     /**
@@ -699,7 +735,8 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T notNull() {
-        
+        reportMatcher(NotNull.NOT_NULL);
+        return null;
     }
 
     /**
@@ -718,7 +755,8 @@ public class ArgumentMatchers {
      * @since 4.11.0
      */
     public static <T> T notNull(Class<T> type) {
-        
+        reportMatcher(new NotNull<>(type));
+        return null;
     }
 
     /**
@@ -736,7 +774,7 @@ public class ArgumentMatchers {
      * @see #isNull()
      */
     public static <T> T isNotNull() {
-        
+        return notNull();
     }
 
     /**
@@ -756,7 +794,7 @@ public class ArgumentMatchers {
      * @since 4.11.0
      */
     public static <T> T isNotNull(Class<T> type) {
-        
+        return notNull(type);
     }
 
     /**
@@ -770,7 +808,8 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T nullable(Class<T> clazz) {
-        
+        AdditionalMatchers.or(isNull(), isA(clazz));
+        return Primitives.defaultValue(clazz);
     }
 
     /**
@@ -782,7 +821,8 @@ public class ArgumentMatchers {
      * @return empty String ("").
      */
     public static String contains(String substring) {
-        
+        reportMatcher(new Contains(substring));
+        return "";
     }
 
     /**
@@ -796,7 +836,8 @@ public class ArgumentMatchers {
      * @see AdditionalMatchers#not(boolean)
      */
     public static String matches(String regex) {
-        
+        reportMatcher(new Matches(regex));
+        return "";
     }
 
     /**
@@ -810,7 +851,8 @@ public class ArgumentMatchers {
      * @see AdditionalMatchers#not(boolean)
      */
     public static String matches(Pattern pattern) {
-        
+        reportMatcher(new Matches(pattern));
+        return "";
     }
 
     /**
@@ -822,7 +864,8 @@ public class ArgumentMatchers {
      * @return empty String ("").
      */
     public static String endsWith(String suffix) {
-        
+        reportMatcher(new EndsWith(suffix));
+        return "";
     }
 
     /**
@@ -834,7 +877,8 @@ public class ArgumentMatchers {
      * @return empty String ("").
      */
     public static String startsWith(String prefix) {
-        
+        reportMatcher(new StartsWith(prefix));
+        return "";
     }
 
     /**
@@ -869,7 +913,8 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T argThat(ArgumentMatcher<T> matcher) {
-        
+        reportMatcher(matcher);
+        return null;
     }
 
     /**
@@ -881,7 +926,13 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T assertArg(Consumer<T> consumer) {
-        
+        reportMatcher(
+        (ArgumentMatcher<T>)
+        argument -> {
+            consumer.accept(argument);
+            return true;
+        });
+        return null;
     }
 
     /**
@@ -894,7 +945,11 @@ public class ArgumentMatchers {
      * @return <code>null</code>.
      */
     public static <T> T assertArg(ThrowingConsumer<T> consumer) {
-        
+        return argThat(
+        argument -> {
+            consumer.accept(argument);
+            return true;
+        });
     }
 
     /**
@@ -908,7 +963,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static char charThat(ArgumentMatcher<Character> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -922,7 +978,8 @@ public class ArgumentMatchers {
      * @return <code>false</code>.
      */
     public static boolean booleanThat(ArgumentMatcher<Boolean> matcher) {
-        
+        reportMatcher(matcher);
+        return false;
     }
 
     /**
@@ -936,7 +993,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static byte byteThat(ArgumentMatcher<Byte> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -950,7 +1008,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static short shortThat(ArgumentMatcher<Short> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -964,7 +1023,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static int intThat(ArgumentMatcher<Integer> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -978,7 +1038,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static long longThat(ArgumentMatcher<Long> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -992,7 +1053,8 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static float floatThat(ArgumentMatcher<Float> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     /**
@@ -1006,10 +1068,11 @@ public class ArgumentMatchers {
      * @return <code>0</code>.
      */
     public static double doubleThat(ArgumentMatcher<Double> matcher) {
-        
+        reportMatcher(matcher);
+        return 0;
     }
 
     private static void reportMatcher(ArgumentMatcher<?> matcher) {
-        
+        mockingProgress().getArgumentMatcherStorage().reportMatcher(matcher);
     }
 }

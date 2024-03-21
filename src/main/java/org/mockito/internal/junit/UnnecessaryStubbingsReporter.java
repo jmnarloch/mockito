@@ -24,11 +24,23 @@ public class UnnecessaryStubbingsReporter implements MockCreationListener {
     private final List<Object> mocks = new LinkedList<Object>();
 
     public void validateUnusedStubs(Class<?> testClass, RunNotifier notifier) {
-        
+        UnusedStubbingReporting.printUnusedStubbings(
+        new Description() {
+            @Override
+            public String getDisplayName() {
+                return testClass.getName();
+            }
+
+            @Override
+            public String toString() {
+                return testClass.getName();
+            }
+        },
+        new RunNotifierWrapper(notifier));
     }
 
     @Override
     public void onMockCreated(Object mock, MockCreationSettings settings) {
-        
+        mocks.add(mock);
     }
 }

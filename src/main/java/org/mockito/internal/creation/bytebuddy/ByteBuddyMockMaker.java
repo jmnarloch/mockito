@@ -24,48 +24,53 @@ public class ByteBuddyMockMaker implements ClassCreatingMockMaker {
     private final SubclassByteBuddyMockMaker subclassByteBuddyMockMaker;
 
     public ByteBuddyMockMaker() {
-        
+        try {
+            subclassByteBuddyMockMaker = new SubclassByteBuddyMockMaker();
+        } catch (NoClassDefFoundError byteBuddyError) {
+            Reporter.missingByteBuddyDependency(byteBuddyError);
+            throw byteBuddyError;
+        }
     }
 
     ByteBuddyMockMaker(SubclassByteBuddyMockMaker subclassByteBuddyMockMaker) {
-        
+        this.subclassByteBuddyMockMaker = subclassByteBuddyMockMaker;
     }
 
     @Override
     public <T> T createMock(MockCreationSettings<T> settings, MockHandler handler) {
-        
+        return subclassByteBuddyMockMaker.createMock(settings, handler);
     }
 
     @Override
     public <T> Optional<T> createSpy(
             MockCreationSettings<T> settings, MockHandler handler, T object) {
-        
+        return subclassByteBuddyMockMaker.createSpy(settings, handler, object);
     }
 
     @Override
     public <T> Class<? extends T> createMockType(MockCreationSettings<T> creationSettings) {
-        
+        return subclassByteBuddyMockMaker.createMockType(creationSettings);
     }
 
     @Override
     public MockHandler getHandler(Object mock) {
-        
+        return subclassByteBuddyMockMaker.getHandler(mock);
     }
 
     @Override
     public void resetMock(Object mock, MockHandler newHandler, MockCreationSettings settings) {
-        
+        subclassByteBuddyMockMaker.resetMock(mock, newHandler, settings);
     }
 
     @Override
     public TypeMockability isTypeMockable(Class<?> type) {
-        
+        return subclassByteBuddyMockMaker.isTypeMockable(type);
     }
 
     @Override
     public <T> StaticMockControl<T> createStaticMock(
             Class<T> type, MockCreationSettings<T> settings, MockHandler handler) {
-        
+        return subclassByteBuddyMockMaker.createStaticMock(type, settings, handler);
     }
 
     @Override
@@ -74,11 +79,12 @@ public class ByteBuddyMockMaker implements ClassCreatingMockMaker {
             Function<MockedConstruction.Context, MockCreationSettings<T>> settingsFactory,
             Function<MockedConstruction.Context, MockHandler<T>> handlerFactory,
             MockedConstruction.MockInitializer<T> mockInitializer) {
-        
+        return subclassByteBuddyMockMaker.createConstructionMock(
+        type, settingsFactory, handlerFactory, mockInitializer);
     }
 
     @Override
     public void clearAllCaches() {
-        
+        subclassByteBuddyMockMaker.clearAllCaches();
     }
 }

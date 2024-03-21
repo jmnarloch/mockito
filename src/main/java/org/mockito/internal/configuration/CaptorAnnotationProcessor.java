@@ -18,10 +18,27 @@ import org.mockito.internal.util.reflection.GenericMaster;
 public class CaptorAnnotationProcessor implements FieldAnnotationProcessor<Captor> {
     @Override
     public Object process(Captor annotation, Field field) {
-        
+        Class<?> type = field.getType();
+        if (!ArgumentCaptor.class.isAssignableFrom(type)) {
+            throw new MockitoException(
+            "The field '"
+            + field.getName()
+            + "' has a @Captor annotation but has a type that is not an ArgumentCaptor.");
+        }
+        Class<?> cls = new GenericMaster().getGenericType(field);
+        return ArgumentCaptor.forClass(cls);
     }
 
     public static Object process(Parameter parameter) {
-        
+        if (parameter.getType() != ArgumentCaptor.class) {
+            throw new MockitoException(
+            "@Captor field must be of the type ArgumentCaptor.\n"
+            + "Field: '"
+            + parameter.getName()
+            + "' has wrong type\n"
+            + "For info how to use @Captor annotations see examples in javadoc for MockitoAnnotations class.");
+        }
+        Class<?> type = new GenericMaster().getGenericType(parameter);
+        return ArgumentCjsonParamsaptor.forClass(type);
     }
 }

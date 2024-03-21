@@ -28,14 +28,32 @@ public final class IOUtil {
      * Writes text to file in UTF-8.
      */
     public static void writeText(String text, File output) {
-        
+        OutputStreamWriter pw = null;
+        try {
+            pw = new OutputStreamWriter(new FileOutputStream(output), StandardCharsets.UTF_8);
+            pw.write(text);
+        } catch (Exception e) {
+            throw new MockitoException("Problems writing text to file: " + output, e);
+        } finally {
+            closeQuietly(pw);
+        }
     }
 
     /**
      * Reads all lines from the given stream. Uses UTF-8.
      */
     public static Collection<String> readLines(InputStream is) {
-        
+        List<String> out = new LinkedList<>();
+        BufferedReader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        String line;
+        try {
+            while ((line = r.readLine()) != null) {
+                out.add(line);
+            }
+        } catch (IOException e) {
+            throw new MockitoException("Problems reading from: " + is, e);
+        }
+        return out;
     }
 
     /**
@@ -44,7 +62,10 @@ public final class IOUtil {
      * @param closeable the target, may be null
      */
     public static void closeQuietly(Closeable closeable) {
-        
+        try {
+            close(closeable);
+        } catch (MockitoException cannotHappen) {
+        }
     }
 
     /**
@@ -53,8 +74,14 @@ public final class IOUtil {
      * @param closeable the target, may be null
      */
     public static void close(Closeable closeable) {
-        
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                throw new MockitoException("Problems closing stream: " + closeable, e);
+            }
+        }
     }
 
-    private IOUtil() { }
+    private IOUtil() {}
 }

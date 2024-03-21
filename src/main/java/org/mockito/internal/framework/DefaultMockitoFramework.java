@@ -20,35 +20,42 @@ public class DefaultMockitoFramework implements MockitoFramework {
 
     @Override
     public MockitoFramework addListener(MockitoListener listener) {
-        
+        Checks.checkNotNull(listener, "listener");
+        mockingProgress().addListener(listener);
+        return this;
     }
 
     @Override
-    public MockitoFramework removeListener(MockitoListener listener) {
-        
-    }
+    public MockitoFramework removeListener(MockitoListener listener) {}
 
     @Override
     public MockitoPlugins getPlugins() {
-        
+        return Plugins.getPlugins();
     }
 
     @Override
     public InvocationFactory getInvocationFactory() {
-        
+        return new DefaultInvocationFactory();
     }
 
     private InlineMockMaker getInlineMockMaker() {
-        
+        MockMaker mockMaker = Plugins.getMockMaker();
+        return (mockMaker instanceof InlineMockMaker) ? (InlineMockMaker) mockMaker : null;
     }
 
     @Override
     public void clearInlineMocks() {
-        
+        InlineMockMaker mockMaker = getInlineMockMaker();
+        if (mockMaker != null) {
+            mockMaker.clearAllMocks();
+        }
     }
 
     @Override
     public void clearInlineMock(Object mock) {
-        
+        InlineMockMaker mockMaker = getInlineMockMaker();
+        if (mockMaker != null) {
+            mockMaker.clearMock(mock);
+        }
     }
 }

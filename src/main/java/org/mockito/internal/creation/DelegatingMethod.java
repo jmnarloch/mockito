@@ -15,42 +15,43 @@ public class DelegatingMethod implements MockitoMethod {
     private final Class<?>[] parameterTypes;
 
     public DelegatingMethod(Method method) {
-        
+        this.method = method;
+        this.parameterTypes = SuspendMethod.trimSuspendParameterTypes(method.getParameterTypes());
     }
 
     @Override
     public Class<?>[] getExceptionTypes() {
-        
+        return method.getExceptionTypes();
     }
 
     @Override
     public Method getJavaMethod() {
-        
+        return method;
     }
 
     @Override
     public String getName() {
-        
+        return method.getName();
     }
 
     @Override
     public Class<?>[] getParameterTypes() {
-        
+        return parameterTypes;
     }
 
     @Override
     public Class<?> getReturnType() {
-        
+        return method.getReturnType();
     }
 
     @Override
     public boolean isVarArgs() {
-        
+        return method.isVarArgs();
     }
 
     @Override
     public boolean isAbstract() {
-        
+        return (method.getModifiers() & Modifier.ABSTRACT) != 0;
     }
 
     /**
@@ -59,11 +60,19 @@ public class DelegatingMethod implements MockitoMethod {
      */
     @Override
     public boolean equals(Object o) {
-        
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof DelegatingMethod) {
+            DelegatingMethod that = (DelegatingMethod) o;
+            return method.equals(that.method);
+        } else {
+            return method.equals(o);
+        }
     }
 
     @Override
     public int hashCode() {
-        
+        return method.hashCode();
     }
 }

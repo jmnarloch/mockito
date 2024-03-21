@@ -24,58 +24,69 @@ public class DefaultMockingDetails implements MockingDetails {
     private final Object toInspect;
 
     public DefaultMockingDetails(Object toInspect) {
-        
+        this.toInspect = toInspect;
     }
 
     @Override
     public boolean isMock() {
-        
+        return MockUtil.isMock(toInspect);
     }
 
     @Override
     public boolean isSpy() {
-        
+        return MockUtil.isSpy(toInspect);
     }
 
     @Override
     public Collection<Invocation> getInvocations() {
-        
+        return getInvocationContainer().getInvocations();
     }
 
     private InvocationContainerImpl getInvocationContainer() {
-        
+        assertGoodMock();
+        return MockUtil.getInvocationContainer(toInspect);
     }
 
     @Override
     public MockCreationSettings<?> getMockCreationSettings() {
-        
+        return mockHandler().getMockSettings();
     }
 
     @Override
     public Collection<Stubbing> getStubbings() {
-        
+        return getInvocationContainer().getStubbingsAscending();
     }
 
     @Override
     public String printInvocations() {
-        
+        assertGoodMock();
+        return new InvocationsPrinter().printInvocations(toInspect);
     }
 
     @Override
     public MockHandler getMockHandler() {
-        
+        return mockHandler();
     }
 
     @Override
     public Object getMock() {
-        
+        return toInspect;
     }
 
     private MockHandler<?> mockHandler() {
-        
+        assertGoodMock();
+        return MockUtil.getMockHandler(toInspect);
     }
 
     private void assertGoodMock() {
-        
+        if (toInspect == null) {
+            throw new NotAMockException(
+            "Argument passed to Mockito.mockingDetails() should be a mock, but is null!");
+        } else if (!isMock()) {
+            throw new NotAMockException(
+            "Argument passed to Mockito.mockingDetails() should be a mock, but is an instance of "
+            + toInspect.getClass()
+            + "!");
+        }
     }
 }

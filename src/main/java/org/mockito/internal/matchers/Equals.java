@@ -14,48 +14,59 @@ public class Equals implements ArgumentMatcher<Object>, ContainsExtraTypeInfo, S
     private final Object wanted;
 
     public Equals(Object wanted) {
-        
+        this.wanted = wanted;
     }
 
     @Override
     public boolean matches(Object actual) {
-        
+        return Equality.areEqual(this.wanted, actual);
     }
 
     @Override
     public Class<?> type() {
-        
+        return wanted != null ? wanted.getClass() : ArgumentMatcher.super.type();
     }
 
     @Override
     public String toString() {
-        
+        return describe(wanted);
     }
 
     private String describe(Object object) {
-        
+        return ValuePrinter.print(object);
     }
 
     @Override
     public final Object getWanted() {
-        
+        return wanted;
     }
 
     @Override
     public boolean equals(Object o) {
-        
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Equals)) {
+            return false;
+        }
+
+        Equals equals = (Equals) o;
+
+        return (wanted == null && equals.wanted == null) || wanted.equals(equals.wanted);
     }
 
     @Override
-    public int hashCode() { }
+    public int hashCode() {
+        return 1;
+    }
 
     @Override
     public String toStringWithType(String className) {
-        
+        return "(" + className + ") " + describe(wanted);
     }
 
     @Override
     public boolean typeMatches(Object target) {
-        
+        return wanted != null && target != null && target.getClass() == wanted.getClass();
     }
 }

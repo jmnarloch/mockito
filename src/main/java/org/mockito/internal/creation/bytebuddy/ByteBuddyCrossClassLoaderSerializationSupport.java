@@ -107,20 +107,47 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
      * @throws java.io.ObjectStreamException
      */
     public Object writeReplace(Object mockitoMock) throws ObjectStreamException {
-        // reentrant lock for critical section. could it be improved ?
-        
+        if (mockitoMock instanceof MockAccess) {
+            MockCreationSettings mockSettings =
+            ((MockAccess) mockitoMock).getMockSettings().getSerializationSettings();
+            if (mockSettings != null
+            && mockSettings.getSerializableMode() != SerializableMode.ACROSS_CLASSLOADERS) {
+                return mockitoMock;
+            }
+        }
+
+        if (mockIsCurrentlyBeingReplaced()) {
+            // This should never happen, as it would indicate that the writeReplace code
+            // itself has a bug, causing the mock to be flagged as currently processed for
+            // replacement, but then trying to replace itself again. However, it's better to
+            // have a fallback in this case, instead of failing with a SOE.
+            return mockitoMock;
+        }
+
+        mockReplacementStarted();
+
+        Object replacement;
+        try {
+            replacement = writeReplaceImpl(mockitoMock);
+        } finally {
+            mockReplacementCompleted();
+        }
+
+        return replacement;
     }
 
     private void mockReplacementCompleted() {
-        
+        instanceLocalCurrentlySerializingFlag = false;
+        mutex.unlock();
     }
 
     private void mockReplacementStarted() {
-        
+        assert !instanceLocalCurrentlySerializingFlag;
+        instanceLocalCurrentlySerializingFlag = true;
     }
 
     private boolean mockIsCurrentlyBeingReplaced() {
-        
+        return instanceLocalCurrentlySerializingFlag;
     }
 
     /**
@@ -151,7 +178,21 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          * @throws java.io.IOException
          */
         public CrossClassLoaderSerializationProxy(Object mockitoMock) throws IOException {
-            
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            try (MockitoMockObjectOutputStream out = new MockitoMockObjectOutputStream(byteArrayOutputStream)) {
+                out.writeObject(mockitoMock);
+            } catch (IOException e) {
+                if (e.getCause() instanceof MockitoSerializationIssue) {
+                    throw (MockitoSerializationIssue) e.getCause();
+                } else {
+                    throw new MockitoSerializationIssue(join(e.getMessage()), e);
+                }
+            }
+
+            serializedMock = byteArrayOutputStream.toByteArray();
+            typeToMock = mockitoMock.getClass();
+            MockCreationSettings<?> mockSettings = MockUtil.getMockSettings(mockitoMock);
+            extraInterfaces = mockSettings.getExtraInterfaces();
         }
 
         /**
@@ -164,7 +205,13 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          */
         @SuppressWarnings("BanSerializableRead")
         private Object readResolve() throws ObjectStreamException {
-            
+            try {
+                return new MockitoMockObjectInputStream(
+                new ByteArrayInputStream(serializedMock), typeToMock, extraInterfaces)
+                .readObject();
+            } catch (IOException | ClassNotFoundException ex) {
+                throw new MockitoSerializationIssue("Failed to deserialize " + typeToMock, ex);
+            }
         }
     }
 
@@ -191,7 +238,9 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
         public MockitoMockObjectInputStream(
                 InputStream in, Class<?> typeToMock, Set<Class<?>> extraInterfaces)
                 throws IOException {
-             // ensure resolving is enabled
+            super(in);
+            this.typeToMock = typeToMock;
+            this.extraInterfaces = extraInterfaces;
         }
 
         /**
@@ -210,7 +259,11 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
         @SuppressWarnings("BanSerializableRead")
         protected Class<?> resolveClass(ObjectStreamClass desc)
                 throws IOException, ClassNotFoundException {
-            
+            Object marker = readObject();
+            if (notMarkedAsAMockitoMock(marker)) {
+                return super.resolveClass(desc);
+            }
+            return typeToMock;
         }
 
         /**
@@ -233,7 +286,15 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          */
         private void hackClassNameToMatchNewlyCreatedClass(
                 ObjectStreamClass descInstance, Class<?> proxyClass) throws ObjectStreamException {
-            
+            Field fname = null;
+            try {
+                fname = descInstance.getClass().getDeclaredField("name");
+                fname.setAccessible(true);
+                fname.set(descInstance, proxyClass.getName());
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new ObjectStreamException() {
+                };
+            }
         }
 
         /**
@@ -243,7 +304,7 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          * @return <code>true</code> if not marked as a Mockito, <code>false</code> if the class annotation marks a Mockito mock.
          */
         private boolean notMarkedAsAMockitoMock(Object marker) {
-            
+            return !marker.equals(MOCKITO_PROXY_MARKER);
         }
     }
 
@@ -262,7 +323,7 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
         private static final String NOTHING = "";
 
         public MockitoMockObjectOutputStream(ByteArrayOutputStream out) throws IOException {
-            
+            super(out);
         }
 
         /**
@@ -273,8 +334,12 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          */
         @Override
         protected void annotateClass(Class<?> cl) throws IOException {
-            
+            String annotation = mockitoProxyClassMarker(cl);
+            writeUTF(annotation);
             // might be also useful later, for embedding classloader info ...maybe ...maybe not
+            if (!NOTHING.equals(annotation)) {
+                writeUTF(cl.getName());
+            }
         }
 
         /**
@@ -284,7 +349,14 @@ class ByteBuddyCrossClassLoaderSerializationSupport implements Serializable {
          * @return The marker if this is a Mockito proxy class, otherwise returns a void marker.
          */
         private String mockitoProxyClassMarker(Class<?> cl) {
-            
+            MockCreationSettings mockSettings = MockUtil.getMockSettings(cl);
+            MockName name = mockSettings.getMockName();
+
+            if (name.isDefault()) {
+                return NOTHING;
+            } else {
+                return name.toString();
+            }
         }
     }
 

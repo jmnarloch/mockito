@@ -14,6 +14,11 @@ public class DefaultInstantiatorProvider implements InstantiatorProvider2 {
 
     @Override
     public Instantiator getInstantiator(MockCreationSettings<?> settings) {
-        
+        if (settings != null && settings.getConstructorArgs() != null) {
+            return new ConstructorInstantiator(
+            settings.getOuterClassInstance() != null, settings.getConstructorArgs());
+        } else {
+            return INSTANCE;
+        }
     }
 }

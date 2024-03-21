@@ -28,15 +28,35 @@ public class KotlinInlineClassUtil {
     // So, `thenReturn` calls fails, because of non-compatible types.
     public static boolean isInlineClassWithAssignableUnderlyingType(
             Class<?> inlineClass, Class<?> underlyingType) {
-        
+        try {
+            if (inlineClass.isAnnotationPresent(jvmInlineAnnotation)) {
+                Method boxMethod = inlineClass.getDeclaredMethod("box-impl", inlineClass);
+                Class<?> boxedType = boxMethod.getReturnType();
+                return underlyingType.isAssignableFrom(boxedType);
+            }
+        } catch (NoSuchMethodException | NoSuchMethodError | NoSuchFieldError e) {
+            // `box-impl` is not guaranteed to be present, so ignore it if not
+            // present
+        }
+
+        return false;
     }
 
     private static Object unboxInlineClassIfPossible(Object boxedValue) {
-        
+        Class<?> inlineClass = boxedValue.getClass();
+        try {
+            Method unboxImpl = inlineClass.getDeclaredMethod("unbox-impl");
+            return unboxImpl.invoke(boxedValue);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw Reporter.inlineClassWithoutUnboxImpl(inlineClass, e);
+        }
     }
 
     public static Object unboxUnderlyingValueIfNeeded(InvocationOnMock invocation, Object value) {
-        // Short path - Kotlin 1.5+ is not present.
-        
+        Class<?> returnType = invocation.getMethod().getReturnType();
+        if (returnType.isAnnotationPresent(jvmInlineAnnotation)) {
+            return unboxInlineClassIfPossible(value);
+        }
+        return value;
     }
 }

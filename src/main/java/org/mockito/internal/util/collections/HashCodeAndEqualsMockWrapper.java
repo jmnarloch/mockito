@@ -29,33 +29,42 @@ public class HashCodeAndEqualsMockWrapper {
     private final Object mockInstance;
 
     public HashCodeAndEqualsMockWrapper(Object mockInstance) {
-        
+        this.mockInstance = mockInstance;
     }
 
     public Object get() {
-        
+        return mockInstance;
     }
 
     @Override
     public boolean equals(Object o) {
-        
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        HashCodeAndEqualsMockWrapper that = (HashCodeAndEqualsMockWrapper) o;
+
+        return mockInstance == that.mockInstance;
     }
 
     @Override
     public int hashCode() {
-        
+        return System.identityHashCode(mockInstance);
     }
 
     public static HashCodeAndEqualsMockWrapper of(Object mock) {
-        
+        return new HashCodeAndEqualsMockWrapper(mock);
     }
 
     @Override
     public String toString() {
-        
+        return "HashCodeAndEqualsMockWrapper of " + typeInstanceString();
     }
 
     private String typeInstanceString() {
-        
+        return "hashCode() and equals() : "+System.identityHashCode(mockInstance);
     }
 }

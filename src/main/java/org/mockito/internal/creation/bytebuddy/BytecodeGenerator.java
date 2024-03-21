@@ -18,7 +18,7 @@ public interface BytecodeGenerator {
 
     void mockClassStatic(Class<?> type);
 
-    default void clearAllCaches() { }
+    default void clearAllCaches() {}
 
     static ElementMatcher<MethodDescription> isGroovyMethod(boolean inline) {
         ElementMatcher.Junction<MethodDescription> matcher =

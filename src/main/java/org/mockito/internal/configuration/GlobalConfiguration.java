@@ -22,38 +22,43 @@ public class GlobalConfiguration implements IMockitoConfiguration, Serializable 
 
     // back door for testing
     IMockitoConfiguration getIt() {
-        
+        return GLOBAL_CONFIGURATION.get();
     }
 
     public GlobalConfiguration() {
-        // Configuration should be loaded only once but I cannot really test it
-        
+        GLOBAL_CONFIGURATION.set(createConfig());
     }
 
     private IMockitoConfiguration createConfig() {
-        
+        IMockitoConfiguration defaultConfiguration = new DefaultMockitoConfiguration();
+        IMockitoConfiguration config = new ClassPathLoader().loadConfiguration();
+        if (config != null) {
+            return config;
+        } else {
+            return defaultConfiguration;
+        }
     }
 
     public static void validate() {
-        
+        GlobalConfiguration unused = new GlobalConfiguration();
     }
 
     public org.mockito.plugins.AnnotationEngine tryGetPluginAnnotationEngine() {
-        
+        return Plugins.getAnnotationEngine();
     }
 
     @Override
     public boolean cleansStackTrace() {
-        
+        return GLOBAL_CONFIGURATION.get().cleansStackTrace();
     }
 
     @Override
     public boolean enableClassCache() {
-        
+        return GLOBAL_CONFIGURATION.get().enableClassCache();
     }
 
     @Override
     public Answer<Object> getDefaultAnswer() {
-        
+        return GLOBAL_CONFIGURATION.get().getDefaultAnswer();
     }
 }

@@ -20,6 +20,6 @@ import org.mockito.listeners.MockitoListener;
  */
 public class RedundantListenerException extends MockitoException {
     public RedundantListenerException(String message) {
-        
+        super(message);
     }
 }

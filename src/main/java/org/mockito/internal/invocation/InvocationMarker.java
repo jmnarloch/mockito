@@ -12,18 +12,14 @@ import org.mockito.invocation.MatchableInvocation;
 
 public class InvocationMarker {
 
-    private InvocationMarker() { }
+    private InvocationMarker() {}
 
-    public static void markVerified(List<Invocation> invocations, MatchableInvocation wanted) {
-        
-    }
+    public static void markVerified(List<Invocation> invocations, MatchableInvocation wanted) {}
 
     public static void markVerified(Invocation invocation, MatchableInvocation wanted) {
-        
+        invocation.markVerified();
     }
 
     public static void markVerifiedInOrder(
-            List<Invocation> chunk, MatchableInvocation wanted, InOrderContext context) {
-        
-    }
+            List<Invocation> chunk, MatchableInvocation wanted, InOrderContext context) {}
 }

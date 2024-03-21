@@ -27,11 +27,18 @@ import org.mockito.invocation.MatchableInvocation;
 
 public class NumberOfInvocationsChecker {
 
-    private NumberOfInvocationsChecker() { }
+    private NumberOfInvocationsChecker() {}
 
     public static void checkNumberOfInvocations(
             List<Invocation> invocations, MatchableInvocation wanted, int wantedCount) {
-        
+        List<Invocation> actualInvocations = findInvocations(invocations, wanted);
+
+        int actualCount = actualInvocations.size();
+        if (wantedCount != actualCount) {
+            throw tooManyActualInvocations(wanted, wantedCount, actualCount);
+        }
+
+        markVerified(actualInvocations, wanted);
     }
 
     public static void checkNumberOfInvocations(
@@ -39,7 +46,21 @@ public class NumberOfInvocationsChecker {
             MatchableInvocation wanted,
             int wantedCount,
             InOrderContext context) {
-        
+        int actualCount = 0;
+        while (true) {
+            Invocation next = findFirstMatchingUnverifiedInvocation(invocations, wanted, context);
+            if (next == null) {
+                break;
+            }
+            markVerifiedInOrder(next, wanted, context);
+            actualCount++;
+        }
+
+        if (wantedCount != actualCount) {
+            List<Invocation> chunk = findMatchingChunk(invocations, wanted, context);
+            throw tooManyActualInvocationsInOrder(
+            new Discrepancy(wantedCount, chunk.size()), wanted, getAllLocations(chunk));
+        }
     }
 
     public static void checkNumberOfInvocationsNonGreedy(
@@ -47,6 +68,19 @@ public class NumberOfInvocationsChecker {
             MatchableInvocation wanted,
             int wantedCount,
             InOrderContext context) {
-        
+        int actualCount = 0;
+        Location lastLocation = null;
+        while (actualCount < wantedCount) {
+            Invocation next = findFirstMatchingUnverifiedInvocation(invocations, wanted, context);
+            if (next == null) {
+                List<Location> allLocations = getAllLocations(invocations);
+                throw tooFewActualInvocationsInOrder(
+                new Discrepancy(wantedCount, actualCount), wanted, allLocations, context);
+            }
+            markVerified(next, wanted);
+            context.markVerified(next);
+            lastLocation = next.getLocation();
+            actualCount++;
+        }
     }
 }
